@@ -1,57 +1,97 @@
 import streamlit as st
 from supabase import create_client, Client
+import pandas as pd
 
-# [SYSTEM VIBE: GOLDEN DARK & SACRED]
-st.set_page_config(page_title="D-Fi Vault: Master Edition", page_icon="🏛️")
+# [SYSTEM VIBE: GOLDEN DARK & SACRED GEOMETRY]
+st.set_page_config(page_title="D-Fi Vault v7", page_icon="🏛️", layout="wide")
+
+st.markdown("""
+    <style>
+    .stApp { background-color: #0E1117; color: #FFFFFF; }
+    .stButton>button { 
+        background: linear-gradient(45deg, #D4AF37, #FF4B4B); 
+        color: white; font-weight: bold; border-radius: 10px; width: 100%;
+    }
+    .left-panel { background-color: #161B22; padding: 20px; border-radius: 15px; border: 1px solid #30363D; }
+    .right-panel { background-color: #1E1E1E; padding: 20px; border-radius: 15px; border: 1px solid #D4AF37; }
+    .master-msg { background-color: #2D2D2D; padding: 15px; border-radius: 10px; border-left: 4px solid #D4AF37; margin-bottom: 10px; font-size: 0.9em; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # [CONNECTION: SUPABASE]
 url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(url, key)
 
-st.title("🏛️ D-Fi Vault: Master's Path")
-st.markdown("---")
+# [LAYOUT SETUP: 50:50]
+col_left, col_right = st.columns(2)
 
-with st.form("master_dream_work"):
+# --- LEFT PANEL: DREAM JOURNAL & HISTORY ---
+with col_left:
+    st.markdown("<div class='left-panel'>", unsafe_allow_html=True)
+    st.title("📓 Dream Journal")
     
-    # [Stage 1: Robert Johnson's Association]
-    st.subheader("🚀 Stage 1: 연상 (Association)")
-    st.info("💡 **Robert Johnson's View:** 상징을 분석하려 하지 말고, 그 상징에서 뻗어 나오는 모든 줄기를 나열하세요.")
-    symbol = st.text_input("상징의 원석", placeholder="예: 거대한 바다, 낡은 열쇠")
+    # 지난 꿈 불러오기 기능
+    if st.button("📂 지난 꿈 자산 불러오기"):
+        try:
+            response = supabase.table("dreams").select("*").order("created_at", desc=True).limit(5).execute()
+            if response.data:
+                for d in response.data:
+                    with st.expander(f"📅 {d['created_at'][:10]} - {d['symbol']}"):
+                        st.write(f"**해석:** {d['meaning']}")
+                        st.write(f"**의례:** {d['ritual_self']}")
+            else:
+                st.info("아직 저장된 자산이 없습니다.")
+        except Exception as e:
+            st.error(f"데이터 로드 실패: {e}")
 
-    # [Stage 2: Carl Jung's Archetypal Dynamics]
-    st.subheader("🔍 Stage 2: 역학관계 (Inner Dynamics)")
-    st.info("💡 **Carl Jung's View:** 이 상징은 내 안의 '그림자'인가요, 아니면 나를 이끄는 '아니마'인가요? 내적 인격의 충돌을 확인하세요.")
-    col1, col2 = st.columns(2)
-    with col1:
-        persona = st.selectbox("활성화된 원형(Archetype)", 
-                               ["그림자(잠재력의 창고)", "아니마/무스(영혼의 인도자)", "현자(내면의 스승)", "페르소나(사회적 가면)"])
-    with col2:
-        context = st.text_input("현실의 경제/사회적 상황", placeholder="예: 새로운 투자 결정 전의 불안")
+    dream_content = st.text_area("꿈의 내용을 가감 없이 기록하세요 (원재료)", height=400, placeholder="어젯밤 꿈속에서 나는...")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # [Stage 3: Koh Hye-kyung's Soulful Interpretation]
-    st.subheader("📝 Stage 3: 가치 해석 (Interpretation)")
-    st.info("💡 **Koh Hye-kyung's View:** 꿈은 우리를 살리려고 옵니다. 이 메시지가 나의 '경제적 자립'과 '영혼의 성장'에 어떤 영양분을 주나요?")
-    meaning = st.text_area("에너지의 가치 치환", placeholder="이 꿈은 내가 더 큰 풍요를 담을 그릇이 되기 위해 어떤 태도를 요구하나요?")
-
-    # [Stage 4: Johnson & Koh's Ritual]
-    st.subheader("🏃 Stage 4: 현실 의례 (Ritual)")
-    st.info("💡 **Final View:** 로버트 존슨은 '신체적 의례'를 강조했습니다. 머리로만 이해하지 말고, 몸으로 그 에너지를 현실에 고정하세요.")
-    ritual_self = st.text_input("나를 위한 실질적 행동", placeholder="예: 오늘 얻은 통찰을 바탕으로 경제 일지 한 장 쓰기")
-    ritual_share = st.text_input("사회에 기여할 창의적 에너지", placeholder="예: 주변에 긍정적인 확언 나누기")
+# --- RIGHT PANEL: ROBERT JOHNSON'S 4 STAGES ---
+with col_right:
+    st.markdown("<div class='right-panel'>", unsafe_allow_html=True)
+    st.title("🏛️ Master's Lab")
     
-    social_val = st.slider("기여도 측정", 0, 100, 50)
+    with st.form("inner_work_form"):
+        # Stage 1: 이미지 연상 (Robert Johnson)
+        st.subheader("🚀 Stage 1: 이미지 연상")
+        associations = st.text_input("꿈에서 가장 강렬했던 이미지들을 나열하세요", placeholder="황금 열쇠, 끝없는 바다, 속삭이는 노인")
 
-    if st.form_submit_button("마스터의 관점으로 금고 저장"):
-        if symbol and ritual_self:
-            data = {
-                "symbol": symbol, "block": persona, "context": context,
-                "meaning": meaning, "ritual_self": ritual_self,
-                "ritual_share": ritual_share, "social_value": social_val
-            }
-            try:
+        # Stage 2: 역학관계 (Dynamics)
+        st.subheader("🔍 Stage 2: 역학관계 분석")
+        dynamics = st.text_area("꿈의 내용과 위 이미지가 현실의 어떤 에너지(경제/관계)와 줄다리기 중인가요?", 
+                                placeholder="예: 바다는 나의 막연한 불안을, 열쇠는 이번 계약의 해답을 상징하는 듯함")
+
+        # Stage 3: 자동 통합 해석 (Jung, Johnson, Koh)
+        st.subheader("📝 Stage 3: 마스터 통합 해석")
+        if st.checkbox("거장들의 토론 가동 (AI 분석 시뮬레이션)"):
+            st.markdown(f"""
+            <div class='master-msg'><b>Carl Jung:</b> "이 꿈은 당신의 의식이 {associations}에만 매몰된 것을 경고하며, 전체성을 위해 반대 에너지를 보상하고 있습니다."</div>
+            <div class='master-msg'><b>Robert Johnson:</b> "이 에너지는 단순한 생각이 아닙니다. 당신의 내면에서 실제적인 힘의 이동이 일어나고 있습니다."</div>
+            <div class='master-msg'><b>Koh Hye-kyung:</b> "이미지가 살아서 움직이게 하세요. {associations}는 당신의 영혼이 경제적 자립을 위해 던진 생명줄입니다."</div>
+            """, unsafe_allow_html=True)
+            auto_meaning = f"[{associations}]을 통한 에너지 정렬과 현실적 직면의 필요성"
+        else:
+            auto_meaning = st.text_area("마스터들의 조언을 바탕으로 직접 가치를 치환하세요")
+
+        # Stage 4: 현실 의례 (Ritual)
+        st.subheader("🏃 Stage 4: 현실화 의례")
+        st.info("💡 마스터의 추천 의례: '이미지를 종이에 그리고, 그 뒤에 오늘 당장 확인해야 할 통장 잔고를 적으세요.'")
+        ritual_self = st.text_input("나를 위한 물리적 행동", placeholder="예: 관련 서류 재검토 및 10분 명상")
+        ritual_share = st.text_input("사회적 기여/공유", placeholder="예: 오늘 얻은 통찰 X에 포스팅")
+        
+        # 저장 버튼
+        if st.form_submit_button("자산 금고에 영구 저장"):
+            if associations and ritual_self:
+                data = {
+                    "symbol": associations, "block": "Master Logic v7", "context": dynamics,
+                    "meaning": auto_meaning, "ritual_self": ritual_self,
+                    "ritual_share": ritual_share
+                }
                 supabase.table("dreams").insert(data).execute()
                 st.balloons()
-                st.success("빌더님, 대가들의 지혜가 담긴 데이터 자산이 성공적으로 기록되었습니다.")
-            except Exception as e:
-                st.error(f"저장 중 오류 발생: {e}")
+                st.success("빌더님, 마스터들과의 협업 결과가 금고에 저장되었습니다.")
+            else:
+                st.warning("1단계와 4단계는 에너지를 현실로 가져오는 필수 장치입니다.")
+    st.markdown("</div>", unsafe_allow_html=True)
