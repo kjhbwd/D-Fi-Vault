@@ -1,11 +1,12 @@
 import streamlit as st
 from supabase import create_client, Client
 import time
+import datetime # 날짜 계산용
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v9.8", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v9.9", page_icon="🏛️", layout="wide")
 
-# --- CSS: 폼 버튼(Form Submit Button)까지 완벽 타겟팅 ---
+# --- CSS: 버튼 가독성 완전 정복 & 테마 고정 ---
 st.markdown("""
     <style>
     /* 1. 전체 테마: Deep Black */
@@ -14,37 +15,34 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* 2. [핵심 수정] 일반 버튼(stButton) 뿐만 아니라 폼 버튼(stFormSubmitButton)도 타겟팅 */
-    div[data-testid="stButton"] > button,
-    div[data-testid="stFormSubmitButton"] > button {
+    /* 2. [핵심 수정] HTML button 태그 자체를 타겟팅 (폼 안/밖 구분 없이 적용) */
+    button {
         background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important;
         background-color: #D4AF37 !important;
         border: none !important;
         opacity: 1 !important;
         box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
-        padding: 10px !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 0.5rem !important;
     }
     
-    /* 3. [가독성] 버튼 내부의 글자(p)와 아이콘 등을 무조건 검은색으로 */
-    div[data-testid="stButton"] > button *, 
-    div[data-testid="stFormSubmitButton"] > button * {
+    /* 3. 버튼 내부 텍스트 강제 검정 */
+    button p, button div, button span {
         color: #000000 !important;
         font-weight: 900 !important;
-        fill: #000000 !important; /* 아이콘 색상 */
-        -webkit-text-fill-color: #000000 !important;
+        font-size: 1rem !important;
     }
 
     /* 4. 호버 효과 */
-    div[data-testid="stButton"] > button:hover,
-    div[data-testid="stFormSubmitButton"] > button:hover {
+    button:hover {
         background: #FFD700 !important;
         transform: scale(1.02);
     }
 
-    /* 5. [예외] 삭제 버튼은 붉은색으로 (텍스트 내용으로 감지 시도) */
-    /* 스트림릿 구조상 CSS만으로 특정 텍스트 버튼 색 변경이 어려울 수 있으나, 최대한 시도 */
-    /* (만약 붉은색 적용이 안 되더라도 황금색으로 보여서 기능상 문제는 없습니다) */
-
+    /* 5. [예외 시도] 삭제 버튼 (텍스트 감지) */
+    /* 버튼 텍스트가 '삭제'를 포함하면 배경을 붉은색으로 시도 (브라우저 지원 여부에 따라 다름) */
+    /* 안 먹히더라도 황금색으로 보여서 가독성은 확보됨 */
+    
     /* 6. 입력창 및 레이아웃 */
     div[data-testid="column"] {
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
@@ -55,7 +53,18 @@ st.markdown("""
     
     /* 7. 헤더/푸터 숨김 */
     header, footer { visibility: hidden !important; }
-    h1, h2, h3, p, label, .stMarkdown { color: #FFFFFF !important; }
+    h1, h2, h3, h4, p, label, .stMarkdown, .stMetricValue, .stMetricLabel { color: #FFFFFF !important; }
+    
+    /* 8. 통계 박스 스타일 */
+    div[data-testid="metric-container"] {
+        background-color: #1A1A1A;
+        border: 1px solid #D4AF37;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    div[data-testid="metric-container"] label { color: #D4AF37 !important; }
+    div[data-testid="metric-container"] div { color: #FFFFFF !important; font-size: 1.5rem !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -75,6 +84,48 @@ try:
     key = st.secrets["SUPABASE_KEY"]
     supabase: Client = create_client(url, key)
 except: st.error("DB 연결 오류")
+
+# --- 기능: 데일리 토큰 집계 (오늘 날짜 기준 합산) ---
+def get_daily_tokens():
+    try:
+        # 오늘 날짜 (YYYY-MM-DD)
+        today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+        # 최근 50개 데이터 가져와서 파이썬에서 필터링 (Supabase 쿼리 단순화)
+        res = supabase.table("dreams").select("*").order("created_at", desc=True).limit(50).execute()
+        
+        total_score = 0
+        count = 0
+        
+        if res.data:
+            for d in res.data:
+                # 1. 날짜 확인 (오늘인지)
+                if d['created_at'].startswith(today_str):
+                    # 2. meaning 컬럼에서 토큰 숫자 추출 ("Value: 1234 Tokens")
+                    meaning = d.get('meaning', "")
+                    if meaning and "Value:" in meaning:
+                        try:
+                            # 문자열 파싱: "Value: " 뒤의 숫자만 가져오기
+                            score_part = meaning.split("Value: ")[1].split(" Tokens")[0]
+                            # 쉼표 제거 후 정수 변환
+                            score = int(score_part.replace(",", ""))
+                            total_score += score
+                            count += 1
+                        except: pass
+        return total_score, count
+    except:
+        return 0, 0
+
+# --- DASHBOARD (상단 통계) ---
+daily_sum, daily_count = get_daily_tokens()
+
+col_dash1, col_dash2 = st.columns([0.8, 0.2])
+with col_dash1:
+    st.markdown("### 🏛️ D-Fi Vault Dashboard")
+with col_dash2:
+    # 우측 상단에 작게 통계 표시
+    st.metric(label="💰 Today's Mining", value=f"{daily_sum:,} T", delta=f"{daily_count}건")
+
+st.markdown("---")
 
 # --- LAYOUT ---
 col_left, col_right = st.columns(2)
@@ -97,10 +148,8 @@ with col_left:
                             st.session_state.s2_val = d.get('block', "")
                             st.session_state.s4_val = d.get('ritual_self', "")
                             
-                            # 기존 토큰 값 가져오기
                             meaning_text = d.get('meaning', "")
                             st.session_state.existing_value = meaning_text if meaning_text else "미발행"
-                            
                             st.session_state.interpretation_ready = True if meaning_text else False
                             st.session_state.is_minted = True if meaning_text else False
                             st.rerun()
@@ -171,7 +220,7 @@ with col_right:
     with st.form("mint_form"):
         st.markdown("#### 💎 Stage 4: Asset Minting")
         
-        # 🔴 [기능 구현] 업데이트 모드일 때 지난 가치 보여주기
+        # 지난 가치 표시
         if st.session_state.is_minted and st.session_state.existing_value:
              st.info(f"📉 지난 자산 가치: {st.session_state.existing_value}")
 
@@ -202,7 +251,7 @@ with col_right:
                 st.session_state.is_minted = True
                 st.session_state.existing_value = new_val_str 
                 
-                # 🔴 [기능 구현] 3초간 풍선과 메시지 유지
+                # 3초간 풍선과 메시지 유지
                 st.balloons()
                 st.success(f"✅ 처리가 완료되었습니다!\n\n💰 {new_val_str}")
                 time.sleep(3) # 3초 대기 후 리런
