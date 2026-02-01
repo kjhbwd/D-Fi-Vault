@@ -2,10 +2,10 @@ import streamlit as st
 from supabase import create_client, Client
 import time
 import datetime
-import random # 풍요의 해석 로직을 위한 랜덤 모듈
+import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v11.5", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v11.6", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
@@ -16,7 +16,7 @@ st.markdown("""
     /* 1. 전체 테마: Deep Black */
     .stApp { background-color: #050505 !important; color: #FFFFFF !important; }
     
-    /* 2. 버튼 스타일 (황금색 강제) */
+    /* 2. 버튼 스타일 */
     button {
         background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important;
         background-color: #D4AF37 !important;
@@ -31,13 +31,15 @@ st.markdown("""
     }
     button:hover { background: #FFD700 !important; transform: scale(1.02); }
     
-    /* 3. 입력창 및 텍스트 스타일 */
+    /* 3. 입력창 스타일 */
     .stTextArea textarea, .stTextInput input {
         background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important;
     }
     div[data-testid="column"] {
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
     }
+    
+    /* 4. 헤더/푸터 숨김 */
     header, footer { visibility: hidden !important; }
     h1, h2, h3, h4, p, label, .stMarkdown, .stMetricValue, .stMetricLabel { color: #FFFFFF !important; }
     
@@ -83,20 +85,16 @@ except: st.error("DB 연결 오류")
 # 🧠 [CORE LOGIC] 풍요의 해석 엔진 (Abundance Engine)
 # ==========================================
 def analyze_dream_engine(symbol, dynamics):
-    """
-    단순한 입력값을 받아서 3가지 관점의 깊이 있는 해석과 실천 의례를 생성합니다.
-    """
-    # 키워드 감지 로직 (확장 가능)
     keywords = {
-        "쫓김": "shadow", "도망": "shadow", "괴물": "shadow", "귀신": "shadow",
-        "돈": "wealth", "황금": "wealth", "보석": "wealth", "부자": "wealth",
-        "집": "self", "방": "self", "건물": "self",
-        "물": "unconscious", "바다": "unconscious", "강": "unconscious",
-        "날다": "transcendence", "하늘": "transcendence", "추락": "transcendence",
-        "죽음": "rebirth", "장례식": "rebirth", "시체": "rebirth"
+        "쫓김": "shadow", "도망": "shadow", "괴물": "shadow", "귀신": "shadow", "공격": "shadow",
+        "돈": "wealth", "황금": "wealth", "보석": "wealth", "부자": "wealth", "주식": "wealth",
+        "집": "self", "방": "self", "건물": "self", "이사": "self",
+        "물": "unconscious", "바다": "unconscious", "강": "unconscious", "수영": "unconscious",
+        "날다": "transcendence", "하늘": "transcendence", "비행기": "transcendence",
+        "죽음": "rebirth", "장례식": "rebirth", "시체": "rebirth", "살인": "rebirth",
+        "똥": "wealth", "대변": "wealth"
     }
     
-    # 입력값에서 키워드 추출
     detected_type = "general"
     full_text = (symbol + " " + dynamics).lower()
     for key, val in keywords.items():
@@ -104,7 +102,6 @@ def analyze_dream_engine(symbol, dynamics):
             detected_type = val
             break
             
-    # 관점별 해석 데이터베이스
     interpretations = {
         "shadow": {
             "jung": "이 대상은 당신의 '그림자(Shadow)'입니다. 당신이 억누르거나 외면해온 거대한 잠재력이 의식의 문을 두드리고 있습니다.",
@@ -119,7 +116,7 @@ def analyze_dream_engine(symbol, dynamics):
             "ritual": "지갑이나 통장을 손에 쥐고 '나는 이 풍요를 감당할 그릇이다'라고 선언하기"
         },
         "self": {
-            "jung": "집은 당신의 '인격' 그 자체입니다. 새로운 방이나 공간을 발견했다면, 당신의 의식이 확장되고 있다는 증거입니다.",
+            "jung": "집은 당신의 '인격' 그 자체입니다. 새로운 공간을 발견했다면, 당신의 의식이 확장되고 있다는 증거입니다.",
             "johnson": "당신의 내면 공간을 정비하십시오. 낡은 것은 버리고 새로운 에너지가 들어올 공간을 마련해야 합니다.",
             "ko": "이 공간은 당신의 마음입니다. 꿈속의 그 장소가 어떤 느낌이었는지 기억하고, 현실의 내 방을 그와 비슷하게 꾸미십시오.",
             "ritual": "내 방의 물건 중 하나를 버리거나 위치를 바꾸어 에너지의 흐름 만들기"
@@ -142,20 +139,18 @@ def analyze_dream_engine(symbol, dynamics):
             "ko": "껍질을 깨고 나오는 고통입니다. 하지만 그 끝에는 반드시 더 크고 단단한 당신이 기다리고 있습니다.",
             "ritual": "종이에 버리고 싶은 습관을 적어 찢어버리거나 태우는 상징적 행위 하기"
         },
-        "general": { # 키워드가 없을 때의 일반적이지만 깊이 있는 해석
+        "general": {
             "jung": f"'{symbol}'(이)라는 상징은 당신 무의식이 보낸 특별한 초대장입니다. 이것은 당신이 아직 알지 못하는 내면의 지혜와 연결되어 있습니다.",
             "johnson": "이 꿈의 이미지를 분석하려 하지 말고, 그저 바라보십시오. 그 안에 담긴 에너지가 당신의 삶을 역동적으로 바꿀 것입니다.",
             "ko": "꿈에 나온 모든 것은 결국 당신의 모습입니다. '{symbol}'(이)가 되어보는 상상을 해보십시오. 그것이 당신에게 무슨 말을 합니까?",
             "ritual": f"'{symbol}'의 이미지를 간단히 그리거나, 그 단어를 종이에 적어 오늘 하루 주머니에 넣고 다니기"
         }
     }
-    
     return interpretations[detected_type]
 
 # ==========================================
-# 🚪 GATES & AUTH (v11.4 유지)
+# 🚪 GATES (v11.4 유지)
 # ==========================================
-# 1차 관문
 if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
@@ -190,7 +185,6 @@ if not st.session_state.access_granted:
                 else: st.error("⛔ 유효하지 않은 코드입니다.")
     st.stop()
 
-# 2차 관문
 if not st.session_state.user_id:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
@@ -247,7 +241,7 @@ if not st.session_state.user_id:
     st.stop()
 
 # ==========================================
-# 🏛️ MAIN APP: WORKSPACE
+# 🏛️ MAIN APP
 # ==========================================
 def get_daily_tokens(user):
     try:
@@ -301,8 +295,9 @@ with col_left:
                             meaning_text = d.get('meaning', "")
                             st.session_state.existing_value = meaning_text if meaning_text else "미발행"
                             st.session_state.interpretation_ready = True if meaning_text else False
-                            # 로드시 해석 복원 (저장된 값이 없으면 빈칸)
+                            # 로드시 해석 복원
                             st.session_state.s3_val = "" 
+                            if 's3_key' in st.session_state: del st.session_state.s3_key # 키 초기화
                             st.session_state.is_minted = True if meaning_text else False
                             st.rerun()
                     with c_r: st.write(f"{d['created_at'][:10]} | {d.get('context', '')[:10]}...")
@@ -312,6 +307,7 @@ with col_left:
     if st.button("🔄 새로 쓰기 (Reset)"):
         for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
             st.session_state[key] = "" if key != 'current_dream_id' else None
+        if 's3_key' in st.session_state: del st.session_state.s3_key # 입력창 초기화
         st.session_state.interpretation_ready = False
         st.session_state.is_minted = False
         st.rerun()
@@ -355,10 +351,8 @@ with col_right:
             st.session_state.s1_val = s1_input
             st.session_state.s2_val = s2_input
             
-            # [🔥 CORE] 해석 엔진 가동
             result = analyze_dream_engine(s1_input, s2_input)
             
-            # 결과 포맷팅
             analysis_text = f"""[🏛️ D-Fi 심층 분석 결과]
 
 1. 👤 칼 융 (C.G. Jung):
@@ -370,12 +364,17 @@ with col_right:
 3. 🕯️ 고혜경 박사 (Projective Work):
 "{result['ko']}"
 """
+            # 🔴 [핵심 수정] 위젯 키(Key)에 직접 값을 주입하여 강제 업데이트
+            st.session_state['s3_key'] = analysis_text 
             st.session_state.s3_val = analysis_text
-            st.session_state.s4_val = result['ritual'] # 의례 자동 추천
+            st.session_state.s4_val = result['ritual']
             st.session_state.interpretation_ready = True
-            st.toast("✨ 무의식 데이터 분석 완료!")
+            st.toast("✨ 분석 완료! 해석이 로딩되었습니다.")
+            time.sleep(0.1) 
+            st.rerun() # 확실한 반영을 위해 리런
         else: st.warning("Stage 1(상징)을 입력해야 해석할 수 있습니다.")
 
+    # 위젯에 key를 부여하여 상태 관리
     st.text_area("🏛️ Stage 3: 해석 (Interpretation)", value=st.session_state.s3_val, height=350, disabled=False, key="s3_key")
 
     with st.form("mint_form"):
