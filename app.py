@@ -3,80 +3,88 @@ from supabase import create_client, Client
 import datetime
 import random
 
-# [SYSTEM VIBE: AETHIR GUIDE STYLE - CLEAN & HIGH CONTRAST]
+# [SYSTEM VIBE: FORCE DARK THEME & AETHIR STYLE]
 st.set_page_config(page_title="D-Fi Smart Guide", page_icon="📙", layout="centered")
 
-# --- CSS: 에이셔 가이드 색감 및 버튼 가독성 완전 해결 ---
+# --- CSS: 테마 강제 주입 및 화이트 플래시(White Flash) 제거 ---
 st.markdown("""
     <style>
-    /* 1. 배경 및 폰트: 에이셔 가이드의 Deep Dark 테마 적용 */
-    .stApp { 
-        background-color: #050505 !important; /* 더 깊은 검정 */
-        color: #E6E6E6 !important; /* 눈이 편안한 밝은 회색 */
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* 1. [핵심] 시스템 테마 무시하고 다크 모드 변수 강제 주입 */
+    :root {
+        --primary-color: #D4AF37;
+        --background-color: #050505;
+        --secondary-background-color: #111111;
+        --text-color: #E6E6E6;
+        --font: sans-serif;
     }
     
-    /* 2. 타이틀 스타일: 깔끔하고 모던하게 */
-    .guide-title {
-        font-size: 2.2em; font-weight: 700; color: #FFFFFF; letter-spacing: -0.02em; margin-bottom: 0.2em;
-    }
-    .guide-subtitle {
-        font-size: 1.0em; color: #888888; margin-bottom: 2.5em; border-bottom: 1px solid #333333; padding-bottom: 15px;
+    /* 2. 전체 앱 배경 강제 설정 */
+    .stApp {
+        background-color: #050505 !important;
+        color: #E6E6E6 !important;
     }
 
-    /* 3. 챕터(Expander) 스타일: 가이드북의 섹션 느낌 */
+    /* 3. [문제 해결] 챕터 박스(Expander)가 하얗게 나오는 현상 제거 */
+    /* 헤더 (눌러서 펼치는 부분) */
     .streamlit-expanderHeader {
-        background-color: #111111 !important; /* 아주 어두운 회색 */
+        background-color: #161616 !important;
         color: #FFFFFF !important;
         border: 1px solid #333333 !important;
         border-radius: 4px !important;
-        font-weight: 600 !important;
     }
-    .streamlit-expanderContent {
+    /* 바디 (펼쳐진 내용 부분) - image_3ffc60.png의 하얀 배경 범인 */
+    div[data-testid="stExpander"] > details > div {
         background-color: #0A0A0A !important;
         border: 1px solid #333333 !important;
         border-top: none !important;
+        color: #E6E6E6 !important;
+    }
+    /* Expander 내부의 모든 텍스트 강제 흰색 */
+    div[data-testid="stExpander"] p, 
+    div[data-testid="stExpander"] label, 
+    div[data-testid="stExpander"] span {
+        color: #E6E6E6 !important;
+    }
+
+    /* 4. [문제 해결] 버튼 스타일 - 가독성 끝판왕 */
+    .stButton > button {
+        background: linear-gradient(90deg, #FFD700 0%, #FDB931 100%) !important;
+        color: #000000 !important; /* 완전 검정 글씨 */
+        font-weight: 900 !important; /* 더 두껍게 */
+        border: none !important;
+        padding: 0.8rem 1rem !important;
+        border-radius: 4px !important;
+        opacity: 1 !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* 입체감 추가 */
+    }
+    .stButton > button:hover {
+        background: linear-gradient(90deg, #FDB931 0%, #FFD700 100%) !important;
+        color: #000000 !important;
+        transform: translateY(-1px);
+    }
+    /* 버튼 내부 텍스트 컨테이너 강제 검정 (스트림릿 내부 구조 침투) */
+    .stButton > button p {
+        color: #000000 !important;
+    }
+
+    /* 5. 입력창 스타일 (다크 모드 유지) */
+    .stTextArea textarea, .stTextInput input {
+        background-color: #161616 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #444444 !important;
+    }
+    /* 입력창 라벨 숨기거나 색상 변경 */
+    .stTextArea label, .stTextInput label {
         color: #CCCCCC !important;
     }
 
-    /* 4. 🔴 핵심 수정: 버튼 가독성 및 '끝글자 흐림' 해결 */
-    .stButton > button {
-        /* 황금색 그라데이션 유지하되, 텍스트 가독성 최우선 */
-        background: linear-gradient(90deg, #FFD700 0%, #FDB931 100%) !important;
-        color: #000000 !important; /* ⚠️ 완전한 검정색 글자로 고정 */
-        font-weight: 800 !important;
-        border: none !important;
-        border-radius: 4px !important;
-        padding: 0.6rem 1rem !important;
-        width: 100% !important;
-        opacity: 1 !important; /* 상시 노출 */
-        text-shadow: none !important; /* 그림자 제거 (흐림 원인 차단) */
-        transition: transform 0.1s ease;
+    /* 6. 타이틀 및 기타 */
+    .guide-title {
+        font-size: 2.2em; font-weight: 700; color: #FFFFFF; margin-bottom: 0.2em;
     }
-    .stButton > button:hover {
-        transform: scale(1.01); /* 호버 시 살짝 커지는 효과만 줌 (색상 변경 X) */
-        color: #000000 !important;
+    .guide-subtitle {
+        font-size: 1.0em; color: #888888; margin-bottom: 2em; border-bottom: 1px solid #333333; padding-bottom: 15px;
     }
-    
-    /* 삭제 버튼 (붉은 계열) */
-    .delete-btn > button {
-        background: linear-gradient(90deg, #FF5F6D, #FFC371) !important;
-        color: #FFFFFF !important;
-    }
-
-    /* 5. 입력창 및 텍스트 상시 노출 */
-    .stTextArea textarea, .stTextInput input {
-        background-color: #161616 !important; 
-        color: #FFFFFF !important; 
-        border: 1px solid #444444 !important;
-        font-size: 1rem !important;
-    }
-    /* 라벨, 설명글 등 모든 텍스트 강제 흰색/밝은회색 */
-    p, label, .stMarkdown, div[data-testid="stMarkdownContainer"] {
-        color: #E6E6E6 !important; opacity: 1 !important; visibility: visible !important;
-    }
-
-    /* 토큰 박스 스타일 */
     .token-box {
         background-color: #111111; border: 1px solid #333333; border-left: 4px solid #FDB931; 
         padding: 20px; border-radius: 4px; margin-top: 15px;
@@ -97,27 +105,27 @@ try:
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
     supabase: Client = create_client(url, key)
-except: st.error("데이터베이스 연결 실패")
+except: st.error("DB 연결 실패")
 
 # --- HEADER ---
 st.markdown("<div class='guide-title'>D-Fi Smart Guide</div>", unsafe_allow_html=True)
 st.markdown("""
 <div class='guide-subtitle'>
-    <b>무의식의 미래를 선점하라 (Chapter Ver.)</b><br>
+    <b>무의식의 미래를 선점하라 (Dark Mode Ver.)</b><br>
     KO / EN | 챕터를 클릭하여 꿈 자산화 작업을 수행하세요.
 </div>
 """, unsafe_allow_html=True)
 
-# --- PROLOGUE: LOAD ---
+# --- PROLOGUE ---
 with st.expander("📂 Prologue: 내 자산 불러오기 (Load)", expanded=False):
-    st.info("기록된 꿈 자산 목록입니다. 클릭하면 수정 모드로 진입합니다.")
+    st.info("기록된 꿈 자산 목록입니다. (수정 모드 진입)")
     try:
         res = supabase.table("dreams").select("*").order("created_at", desc=True).limit(5).execute()
         if res.data:
             for d in res.data:
-                col1, col2 = st.columns([0.25, 0.75])
+                col1, col2 = st.columns([0.2, 0.8])
                 with col1:
-                    if st.button("로드", key=f"load_{d['id']}"):
+                    if st.button("로드", key=f"ld_{d['id']}"):
                         st.session_state.current_dream_id = d['id']
                         st.session_state.dream_context = d.get('context', "")
                         st.session_state.s1_val = d.get('symbol', "")
@@ -126,8 +134,7 @@ with st.expander("📂 Prologue: 내 자산 불러오기 (Load)", expanded=False
                         st.session_state.interpretation_ready = True if d.get('meaning') else False
                         st.rerun()
                 with col2:
-                    summary = d.get('context', '내용 없음')[:25].replace("\n", " ")
-                    st.write(f"**{d['created_at'][5:10]}**: {summary}...")
+                    st.write(f"**{d['created_at'][:10]}**: {d.get('context', '')[:20]}...")
         else:
             st.write("저장된 기록이 없습니다.")
     except: pass
@@ -142,7 +149,7 @@ with st.expander("📂 Prologue: 내 자산 불러오기 (Load)", expanded=False
         st.session_state.interpretation_ready = False
         st.rerun()
 
-# --- CHAPTER 1: RECORD ---
+# --- CHAPTER 1 ---
 with st.expander("📓 Chapter 1: 무의식 원재료 (Record)", expanded=True):
     status = f"📝 수정 모드 (ID: {st.session_state.current_dream_id})" if st.session_state.current_dream_id else "✨ 신규 작성 모드"
     st.caption(status)
@@ -153,10 +160,11 @@ with st.expander("📓 Chapter 1: 무의식 원재료 (Record)", expanded=True):
         
         c1, c2 = st.columns(2)
         with c1:
+            # 버튼 텍스트 색상 강제 검정 확인
             if st.form_submit_button("💾 챕터 1 저장하기"):
                 if st.session_state.current_dream_id:
                     supabase.table("dreams").update({"context": dream_raw}).eq("id", st.session_state.current_dream_id).execute()
-                    st.toast("내용이 수정되었습니다.")
+                    st.toast("수정 완료")
                 else:
                     data = supabase.table("dreams").insert({"context": dream_raw}).execute()
                     if data.data:
@@ -171,33 +179,30 @@ with st.expander("📓 Chapter 1: 무의식 원재료 (Record)", expanded=True):
                     st.session_state.dream_context = ""
                     st.rerun()
 
-# --- CHAPTER 2: ANALYSIS ---
+# --- CHAPTER 2 ---
 with st.expander("🚀 Chapter 2: Master's Lab (Analysis)", expanded=True):
     st.markdown("**Stage 1: 이미지 연상**")
-    s1 = st.text_area("강렬한 상징", value=st.session_state.s1_val, height=80, key="s1_key")
+    s1 = st.text_area("강렬한 상징", value=st.session_state.s1_val, height=80)
     
     st.markdown("**Stage 2: 내적 역학**")
-    s2 = st.text_area("현실의 에너지 역학", value=st.session_state.s2_val, height=80, key="s2_key")
+    s2 = st.text_area("현실의 에너지 역학", value=st.session_state.s2_val, height=80)
     
     st.markdown("---")
-    # 트리거 버튼 (가독성 강화)
     if st.button("▼ 마스터 통합 해석 가동 (ENTER)"):
         if s1 and s2: st.session_state.interpretation_ready = True
-        else: st.warning("상징과 역학을 입력하세요.")
+        else: st.warning("내용을 입력하세요.")
 
-# --- CHAPTER 3: INSIGHT ---
+# --- CHAPTER 3 ---
 if st.session_state.interpretation_ready:
     with st.expander("📝 Chapter 3: Master's Insight (Result)", expanded=True):
         st.markdown(f"""
         <div class='token-box' style='border-left-color: #D4AF37;'>
             <strong style='color:#D4AF37; font-size:1.1em;'>🏛️ Master's Dialogue</strong><br><br>
             "{s1[:10]}..." 상징은 당신의 현실 속 "{s2[:10]}..." 역동을 돌파하기 위한 무의식의 선물입니다.
-            <br><br>
-            <i>"이 에너지를 회피하지 말고 직면하십시오. 그것이 부의 그릇을 넓히는 길입니다."</i>
         </div>
         """, unsafe_allow_html=True)
 
-# --- CHAPTER 4: MINTING ---
+# --- CHAPTER 4 ---
 with st.expander("💎 Chapter 4: Asset Minting (Token)", expanded=True):
     with st.form("mint_form"):
         st.markdown("**Stage 4: 현실 의례 (Ritual)**")
@@ -208,7 +213,6 @@ with st.expander("💎 Chapter 4: Asset Minting (Token)", expanded=True):
         
         if st.form_submit_button(final_btn):
             if s1 and s4 and st.session_state.interpretation_ready:
-                # 토큰 계산
                 token_val = min(5000, 1000 + len(s1+s2+s4)*5)
                 
                 payload = {
@@ -218,7 +222,7 @@ with st.expander("💎 Chapter 4: Asset Minting (Token)", expanded=True):
                 
                 if st.session_state.current_dream_id:
                     supabase.table("dreams").update(payload).eq("id", st.session_state.current_dream_id).execute()
-                    st.toast("자산 정보 업데이트 완료")
+                    st.toast("업데이트 완료")
                 else:
                     payload["context"] = st.session_state.dream_context
                     supabase.table("dreams").insert(payload).execute()
@@ -228,8 +232,7 @@ with st.expander("💎 Chapter 4: Asset Minting (Token)", expanded=True):
                 <div class='token-box'>
                     <h3 style='margin:0; color:#FDB931;'>💎 Token Minted</h3>
                     <p style='margin:10px 0; font-size:1.2em;'>발행된 자산 가치: <b>{token_val:,} D-Fi Tokens</b></p>
-                    <span style='font-size:0.8em; color:#888;'>* 본 가치는 심리적 자산 지표입니다.</span>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.warning("분석 단계를 모두 완료해주세요.")
+                st.warning("분석을 완료해주세요.")
