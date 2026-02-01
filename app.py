@@ -5,20 +5,20 @@ import datetime
 import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v12.1", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v12.2", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
 
-# --- CSS: 디자인 (Manifesto & Golden Dark - 강력 수정판) ---
+# --- CSS: 디자인 (가독성 수정 & Deep Dark) ---
 st.markdown("""
     <style>
-    /* 1. 전체 테마: Deep Black (강제 적용) */
+    /* 1. 전체 테마 강제 적용 */
     .stApp, .stApp > header, .stApp > footer, .stApp > main {
         background-color: #050505 !important; color: #FFFFFF !important;
     }
     
-    /* 2. 버튼 스타일 */
+    /* 2. 버튼 스타일 (황금색) */
     button {
         background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important;
         background-color: #D4AF37 !important; border: none !important; opacity: 1 !important;
@@ -29,7 +29,7 @@ st.markdown("""
     }
     button:hover { background: #FFD700 !important; transform: scale(1.02); }
     
-    /* 3. 입력창 스타일 */
+    /* 3. 입력창 및 텍스트 영역 스타일 */
     .stTextArea textarea, .stTextInput input {
         background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important;
     }
@@ -37,9 +37,13 @@ st.markdown("""
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
     }
     
-    /* 4. 헤더/푸터 및 경고 숨김 */
+    /* 4. 가독성 패치: Expander 내부 글씨 및 일반 텍스트 강제 색상 지정 */
+    .streamlit-expanderContent p, .streamlit-expanderContent div, .stMarkdown p {
+        color: #CCCCCC !important;
+    }
+    
+    /* 5. 헤더/푸터 및 경고 숨김 */
     header, footer { visibility: hidden !important; }
-    h1, h2, h3, h4, p, label, .stMarkdown, .stMetricValue, .stMetricLabel, li { color: #FFFFFF !important; }
     .stAlert { display: none; } 
     
     /* 🏛️ Manifesto Style */
@@ -51,8 +55,6 @@ st.markdown("""
         background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important;
         color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px;
     }
-    
-    /* 멘트 박스 스타일 (흰색 배경 방지 및 폰트) */
     .defi-desc-box {
         background-color: #111111 !important; padding: 30px !important; border-radius: 15px !important; border: 1px solid #333 !important;
         margin-top: 30px; margin-bottom: 30px;
@@ -99,7 +101,7 @@ def analyze_dream_engine(symbol, dynamics):
     for key, val in keywords.items():
         if key in full_text: detected_type = val; break
 
-    # AI 화가 프롬프트 생성 (시뮬레이션)
+    # AI 화가 프롬프트 생성 (영어 변환 시뮬레이션)
     symbol_en_map = {
         "옷": "mysterious cloth", "체육복": "gym uniform", "가면": "mask",
         "쫓김": "running away from shadow", "괴물": "dark monster",
@@ -111,10 +113,7 @@ def analyze_dream_engine(symbol, dynamics):
     }
     symbol_en = symbol_en_map.get(symbol, f"mysterious {symbol}")
     
-    art_styles = [
-        "Oil painting style, dramatic lighting", "Cyberpunk style, neon lights",
-        "Surrealism style like Dali", "Minimalist line art, golden lines", "Ghibli studio style"
-    ]
+    art_styles = ["Oil painting style, dramatic lighting", "Cyberpunk style, neon lights", "Surrealism style like Dali", "Minimalist line art", "Ghibli studio style"]
     selected_style = random.choice(art_styles)
     image_prompt = f"/imagine prompt: A cinematic shot of {symbol_en}, representing the feeling of '{dynamics}', {selected_style}, 8k resolution, highly detailed --ar 16:9"
 
@@ -156,13 +155,12 @@ def analyze_dream_engine(symbol, dynamics):
     return result
 
 # ==========================================
-# 🚪 1차 관문: Manifesto & Story (수정 완료)
+# 🚪 1차 관문: Manifesto
 # ==========================================
 if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         st.markdown("<br>", unsafe_allow_html=True)
-        # 🔴 [핵심 수정] HTML 코드의 들여쓰기를 제거하고 한 줄로 붙이거나 왼쪽 정렬하여 '코드 블록' 인식 방지
         st.markdown("<div class='main-title'>Dream-Fi : 무의식의 연금술</div>", unsafe_allow_html=True)
         
         st.markdown("""<div class='quote-box'>
@@ -305,10 +303,14 @@ with col_left:
                             st.session_state.s2_val = d.get('block', "")
                             st.session_state.s4_val = d.get('ritual_self', "")
                             meaning_text = d.get('meaning', "")
+                            
+                            # 🟢 [수정] 해석(analysis) 불러오기
+                            loaded_analysis = d.get('analysis', "") 
+                            st.session_state.s3_val = loaded_analysis 
+                            st.session_state['s3_key'] = loaded_analysis # 화면 강제 업데이트
+
                             st.session_state.existing_value = meaning_text if meaning_text else "미발행"
                             st.session_state.interpretation_ready = True if meaning_text else False
-                            st.session_state.s3_val = "" 
-                            if 's3_key' in st.session_state: del st.session_state.s3_key 
                             st.session_state.is_minted = True if meaning_text else False
                             st.rerun()
                     with c_r: st.write(f"{d['created_at'][:10]} | {d.get('context', '')[:10]}...")
@@ -383,7 +385,6 @@ with col_right:
 `{result['prompt']}`
 --------------------------------------------------
 """
-            # 강제 업데이트
             st.session_state['s3_key'] = analysis_text 
             st.session_state.s3_val = analysis_text
             st.session_state.s4_val = result['ritual']
@@ -407,7 +408,16 @@ with col_right:
             if st.session_state.s1_val and s4:
                 token_val = min(5000, 1000 + len(st.session_state.s1_val + s4)*10)
                 new_val_str = f"Value: {token_val} Tokens"
-                payload = {"symbol": st.session_state.s1_val, "block": st.session_state.s2_val, "ritual_self": s4, "meaning": new_val_str}
+                
+                # 🟢 [수정] analysis(해석) 저장 기능 추가
+                payload = {
+                    "symbol": st.session_state.s1_val, 
+                    "block": st.session_state.s2_val, 
+                    "ritual_self": s4, 
+                    "meaning": new_val_str,
+                    "analysis": st.session_state.s3_val # 해석 내용 저장
+                }
+                
                 if st.session_state.current_dream_id:
                     supabase.table("dreams").update(payload).eq("id", st.session_state.current_dream_id).eq("user_id", st.session_state.user_id).execute()
                 else:
