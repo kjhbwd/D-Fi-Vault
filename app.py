@@ -5,7 +5,7 @@ import datetime
 import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v12.0", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v12.1", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
@@ -52,12 +52,12 @@ st.markdown("""
         color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px;
     }
     
-    /* 멘트 박스 스타일 */
+    /* 멘트 박스 스타일 (흰색 배경 방지 및 폰트) */
     .defi-desc-box {
         background-color: #111111 !important; padding: 30px !important; border-radius: 15px !important; border: 1px solid #333 !important;
         margin-top: 30px; margin-bottom: 30px;
     }
-    .defi-desc-text { color: #BBBBBB !important; font-size: 1.0em; line-height: 1.8; }
+    .defi-desc-text { color: #BBBBBB !important; font-size: 1.0em; line-height: 1.8; font-family: sans-serif; }
     .highlight-gold { color: #FDB931 !important; font-weight: bold; font-size: 1.2em; margin-bottom: 15px; display: block; }
     .highlight-bold { color: #FFFFFF !important; font-weight: bold; }
     .faint-hint { color: #888888 !important; font-size: 0.9em; margin-top: 25px; font-style: italic; text-align: center; border-top: 1px solid #333; padding-top: 20px;}
@@ -84,7 +84,6 @@ except: st.error("DB 연결 오류")
 # 🧠 [CORE LOGIC] 해석 & 프롬프트 생성 엔진
 # ==========================================
 def analyze_dream_engine(symbol, dynamics):
-    # 1. 키워드 감지
     keywords = {
         "옷": "persona", "의복": "persona", "체육복": "persona", "유니폼": "persona", "가면": "persona",
         "쫓김": "shadow", "도망": "shadow", "괴물": "shadow", "귀신": "shadow", "공격": "shadow",
@@ -100,8 +99,7 @@ def analyze_dream_engine(symbol, dynamics):
     for key, val in keywords.items():
         if key in full_text: detected_type = val; break
 
-    # 2. AI 화가 프롬프트 생성 (영어 변환 시뮬레이션)
-    # 실제로는 ChatGPT API가 번역해야 하지만, 여기서는 간단한 매핑 사용
+    # AI 화가 프롬프트 생성 (시뮬레이션)
     symbol_en_map = {
         "옷": "mysterious cloth", "체육복": "gym uniform", "가면": "mask",
         "쫓김": "running away from shadow", "괴물": "dark monster",
@@ -111,22 +109,15 @@ def analyze_dream_engine(symbol, dynamics):
         "날다": "flying in the sky", "하늘": "cloudy sky",
         "죽음": "rebirth phoenix", "시체": "sleeping body"
     }
-    # 매핑 안 된 단어는 그냥 발음대로 쓰거나 generic term 사용
     symbol_en = symbol_en_map.get(symbol, f"mysterious {symbol}")
     
     art_styles = [
-        "Oil painting style, dramatic lighting",
-        "Cyberpunk style, neon lights, futuristic",
-        "Surrealism style like Dali, dreamlike atmosphere",
-        "Minimalist line art, golden lines on black background",
-        "Ghibli studio style, soft colors, healing"
+        "Oil painting style, dramatic lighting", "Cyberpunk style, neon lights",
+        "Surrealism style like Dali", "Minimalist line art, golden lines", "Ghibli studio style"
     ]
     selected_style = random.choice(art_styles)
-    
-    # 미드저니/달리용 프롬프트 조합
     image_prompt = f"/imagine prompt: A cinematic shot of {symbol_en}, representing the feeling of '{dynamics}', {selected_style}, 8k resolution, highly detailed --ar 16:9"
 
-    # 3. 3단 해석 생성
     interpretations = {
         "persona": {
             "jung": f"'{symbol}'은(는) 당신의 사회적 가면(Persona)입니다. 당신이 '{dynamics}'라고 느낀 것은, 현재 역할에 변화가 필요함을 무의식이 알리는 신호입니다.",
@@ -161,42 +152,36 @@ def analyze_dream_engine(symbol, dynamics):
     }
     
     result = interpretations.get(detected_type, interpretations["general"])
-    result['prompt'] = image_prompt # 결과에 프롬프트 추가
+    result['prompt'] = image_prompt 
     return result
 
 # ==========================================
-# 🚪 1차 관문: Manifesto & Story
+# 🚪 1차 관문: Manifesto & Story (수정 완료)
 # ==========================================
 if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         st.markdown("<br>", unsafe_allow_html=True)
+        # 🔴 [핵심 수정] HTML 코드의 들여쓰기를 제거하고 한 줄로 붙이거나 왼쪽 정렬하여 '코드 블록' 인식 방지
         st.markdown("<div class='main-title'>Dream-Fi : 무의식의 연금술</div>", unsafe_allow_html=True)
         
-        st.markdown("""
-        <div class='quote-box'>
-            "현실의 결핍은 무의식의 풍요로 채워진다.<br>
-            이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div class='quote-box'>
+    "현실의 결핍은 무의식의 풍요로 채워진다.<br>
+    이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."
+</div>""", unsafe_allow_html=True)
         
-        st.markdown("""
-        <div class='defi-desc-box'>
-            <div class='defi-desc-text'>
-                <span class='highlight-gold'>🪙 Dream Pts : 나의 퀀텀 에너지 지수</span>
-                
-                <p><span class='highlight-bold'>1. 성장의 시각화 (Visualizing Growth)</span><br>
-                저는 생존을 고민하는 평범한 사람입니다. 하지만 매일 밤 <b>꿈(무의식)</b>을 채굴하여 제 잠재력을 깨우고 있습니다. 여기에 쌓이는 포인트는 제가 얼마나 깊이 각성했는지를 보여주는 <b>성장의 증명</b>입니다.</p>
-
-                <p><span class='highlight-bold'>2. 현실의 변화 (X-Factor)</span><br>
-                이곳에서 제련된 통찰은 <b>X(트위터)</b>와 현실의 콘텐츠가 됩니다. 무의식의 영감이 어떻게 <b>노출수(Traffic)</b>와 <b>수익(Revenue)</b>으로 변환되는지 목격하십시오.</p>
-
-                <div class='faint-hint'>
-                "상상해 보십시오. 제가 퀀텀 점프에 성공하는 날, 이곳에 남겨진 당신의 <b>초기 채굴 기록(Genesis Data)</b>들이 어떤 가치(Value)로 치환될지... 그 가능성은 열어두겠습니다."
-                </div>
-            </div>
+        st.markdown("""<div class='defi-desc-box'>
+    <div class='defi-desc-text'>
+        <span class='highlight-gold'>🪙 Dream Pts : 나의 퀀텀 에너지 지수</span>
+        <p><span class='highlight-bold'>1. 성장의 시각화 (Visualizing Growth)</span><br>
+        저는 생존을 고민하는 평범한 사람입니다. 하지만 매일 밤 <b>꿈(무의식)</b>을 채굴하여 제 잠재력을 깨우고 있습니다. 여기에 쌓이는 포인트는 제가 얼마나 깊이 각성했는지를 보여주는 <b>성장의 증명</b>입니다.</p>
+        <p><span class='highlight-bold'>2. 현실의 변화 (X-Factor)</span><br>
+        이곳에서 제련된 통찰은 <b>X(트위터)</b>와 현실의 콘텐츠가 됩니다. 무의식의 영감이 어떻게 <b>노출수(Traffic)</b>와 <b>수익(Revenue)</b>으로 변환되는지 목격하십시오.</p>
+        <div class='faint-hint'>
+        "상상해 보십시오. 제가 퀀텀 점프에 성공하는 날, 이곳에 남겨진 당신의 <b>초기 채굴 기록(Genesis Data)</b>들이 어떤 가치(Value)로 치환될지... 그 가능성은 열어두겠습니다."
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+</div>""", unsafe_allow_html=True)
         
         with st.form("gate_form"):
             input_code = st.text_input("Entry Code", type="password", placeholder="입장 코드를 입력하세요")
