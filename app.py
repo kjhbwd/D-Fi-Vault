@@ -4,7 +4,7 @@ import time
 import datetime
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v11.3", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v11.4", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
@@ -46,7 +46,7 @@ st.markdown("""
     .main-title {
         font-size: 2.5em; font-weight: 900; color: #D4AF37; text-align: center; margin-bottom: 20px;
         text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-        font-family: 'Malgun Gothic', sans-serif; /* 한글 폰트 적용 */
+        font-family: 'Malgun Gothic', sans-serif;
     }
     .quote-box {
         border-left: 3px solid #D4AF37; padding-left: 20px; margin: 20px 0; color: #E0E0E0; font-style: italic; font-size: 1.1em;
@@ -76,6 +76,8 @@ for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's4_val', '
     if key not in st.session_state: st.session_state[key] = "" if key != 'current_dream_id' else None
 if 'interpretation_ready' not in st.session_state: st.session_state.interpretation_ready = False
 if 'is_minted' not in st.session_state: st.session_state.is_minted = False
+# 3단계 해석 결과 저장용 변수 추가
+if 's3_val' not in st.session_state: st.session_state.s3_val = ""
 
 # [CONNECTION]
 try:
@@ -91,11 +93,8 @@ if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         st.markdown("<br>", unsafe_allow_html=True)
-        
-        # 1. 메인 타이틀 (한글 변경)
         st.markdown("<div class='main-title'>D-Fi : 무의식의 연금술</div>", unsafe_allow_html=True)
         
-        # 2. 칼 융 인용구
         st.markdown("""
         <div class='quote-box'>
             "무의식에 다가가서 무의식의 상징 언어를 배운다면,<br>
@@ -104,7 +103,6 @@ if not st.session_state.access_granted:
         </div>
         """, unsafe_allow_html=True)
         
-        # 3. 로버트 존슨의 4단계 & D-Fi 개념
         st.markdown("""
         <div class='step-container'>
             <div class='step-title'>🏛️ 로버트 A. 존슨의 꿈 작업 4단계</div>
@@ -125,7 +123,6 @@ if not st.session_state.access_granted:
         </div>
         """, unsafe_allow_html=True)
         
-        # 4. 입장 폼
         with st.form("gate_form"):
             input_code = st.text_input("Entry Code", type="password", placeholder="입장 코드를 입력하세요")
             if st.form_submit_button("🗝️ 무의식 광산 입장하기"):
@@ -139,7 +136,7 @@ if not st.session_state.access_granted:
     st.stop()
 
 # ==========================================
-# 🚪 2차 관문: Identity Check (로그인/가입)
+# 🚪 2차 관문: Identity Check
 # ==========================================
 if not st.session_state.user_id:
     c1, c2, c3 = st.columns([1, 2, 1])
@@ -229,7 +226,9 @@ daily_sum, daily_count = get_daily_tokens(st.session_state.user_id)
 
 col_dash1, col_dash2, col_dash3 = st.columns([0.6, 0.2, 0.2])
 with col_dash1: st.markdown(f"### 🏛️ Vault of {st.session_state.user_id}")
-with col_dash2: st.metric(label="Today's Mining", value=f"{daily_sum:,} T", delta=f"{daily_count}건")
+with col_dash2: 
+    # [수정] T -> Dream Pts로 단위 변경
+    st.metric(label="Today's Mining", value=f"{daily_sum:,} Dream Pts", delta=f"{daily_count}건")
 with col_dash3:
     if st.button("🔒 로그아웃"):
         for key in list(st.session_state.keys()): del st.session_state[key]
@@ -257,6 +256,7 @@ with col_left:
                             meaning_text = d.get('meaning', "")
                             st.session_state.existing_value = meaning_text if meaning_text else "미발행"
                             st.session_state.interpretation_ready = True if meaning_text else False
+                            st.session_state.s3_val = f'"{st.session_state.s1_val}" 상징은 당신의 무의식이 보내는 통합의 메시지입니다.' if meaning_text else "" # 로드시 해석 복원
                             st.session_state.is_minted = True if meaning_text else False
                             st.rerun()
                     with c_r: st.write(f"{d['created_at'][:10]} | {d.get('context', '')[:10]}...")
@@ -264,7 +264,7 @@ with col_left:
         except: pass
     
     if st.button("🔄 새로 쓰기 (Reset)"):
-        for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's4_val', 'existing_value']:
+        for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
             st.session_state[key] = "" if key != 'current_dream_id' else None
         st.session_state.interpretation_ready = False
         st.session_state.is_minted = False
@@ -297,25 +297,25 @@ with col_left:
                     st.rerun()
 
 with col_right:
-    st.markdown("### 🏛️ Master's Lab")
+    # [수정] 헤더 타이틀 한글화
+    st.markdown("### 🏛️ D-Fi 연금술")
+    
     st.text_area("🚀 Stage 1: 연상 (Association)", value=st.session_state.s1_val, height=100, key="s1_key", placeholder="꿈속 이미지의 개인적 의미를 발견하세요")
     st.text_area("🔍 Stage 2: 역학 (Dynamics)", value=st.session_state.s2_val, height=100, key="s2_key", placeholder="내면 에너지의 흐름을 파악하세요")
+    
     if st.button("▼ 마스터 해석 가동 (ENTER)"):
         s1_input = st.session_state.s1_key
         s2_input = st.session_state.s2_key
         if s1_input and s2_input: 
             st.session_state.s1_val = s1_input
             st.session_state.s2_val = s2_input
+            # [수정] 해석 결과 텍스트 생성
+            st.session_state.s3_val = f'"{s1_input}" 상징은 당신의 무의식이 보내는 통합의 메시지입니다.'
             st.session_state.interpretation_ready = True
         else: st.warning("내용을 입력해주세요.")
 
-    if st.session_state.interpretation_ready:
-        st.markdown(f"""
-        <div style='background-color:#0A0A0A; border:1px solid #333; border-left:4px solid #D4AF37; padding:15px; margin-top:15px;'>
-            <strong style='color:#D4AF37;'>🏛️ 3단계: 해석 (Interpretation)</strong><br>
-            "{st.session_state.s1_val[:10]}..." 상징은 당신의 무의식이 보내는 통합의 메시지입니다.
-        </div>
-        """, unsafe_allow_html=True)
+    # [수정] 3단계도 입력창(빈칸) 형태로 통일
+    st.text_area("🏛️ Stage 3: 해석 (Interpretation)", value=st.session_state.s3_val, height=100, disabled=False, key="s3_key")
 
     with st.form("mint_form"):
         st.markdown("#### 💎 Stage 4: 의례 (Ritual)")
