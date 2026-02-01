@@ -4,7 +4,7 @@ import time
 import datetime
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v11.2", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v11.3", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
@@ -46,6 +46,7 @@ st.markdown("""
     .main-title {
         font-size: 2.5em; font-weight: 900; color: #D4AF37; text-align: center; margin-bottom: 20px;
         text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        font-family: 'Malgun Gothic', sans-serif; /* 한글 폰트 적용 */
     }
     .quote-box {
         border-left: 3px solid #D4AF37; padding-left: 20px; margin: 20px 0; color: #E0E0E0; font-style: italic; font-size: 1.1em;
@@ -91,8 +92,8 @@ if not st.session_state.access_granted:
     with c2:
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # 1. 메인 타이틀
-        st.markdown("<div class='main-title'>D-Fi : The Alchemy of Unconscious</div>", unsafe_allow_html=True)
+        # 1. 메인 타이틀 (한글 변경)
+        st.markdown("<div class='main-title'>D-Fi : 무의식의 연금술</div>", unsafe_allow_html=True)
         
         # 2. 칼 융 인용구
         st.markdown("""
@@ -106,7 +107,7 @@ if not st.session_state.access_granted:
         # 3. 로버트 존슨의 4단계 & D-Fi 개념
         st.markdown("""
         <div class='step-container'>
-            <div class='step-title'>🏛️ Robert A. Johnson's Dream Work Protocol</div>
+            <div class='step-title'>🏛️ 로버트 A. 존슨의 꿈 작업 4단계</div>
             <div class='step-list'>
                 <b>1단계 : 연상 (Association)</b> - 꿈속 상징의 개인적 의미 발견<br>
                 <b>2단계 : 역학 (Dynamics)</b> - 내면 에너지의 흐름 파악<br>
