@@ -12,9 +12,9 @@ st.set_page_config(page_title="D-Fi Vault v13.3", page_icon="🏛️", layout="w
 COMMUNITY_PASSWORD = "2026"
 
 # 🛡️ 2. 관리자 보안 설정 (테스트용)
-# 👇 여기에 빌더님이 로그인하실 아이디를 적어주세요! (예: "dreamer01")
+# 👇 빌더님의 실제 아이디를 입력하세요.
 ADMIN_USER = "dreamer01"  
-# 👇 관리자 메뉴를 여는 마스터 키 (지금은 테스트니까 1234)
+# 👇 관리자 해제 비밀번호
 MASTER_KEY = "1234" 
 
 # 🪙 [TOKENOMICS]
@@ -22,7 +22,7 @@ MAX_SUPPLY = 21000000
 HALVING_STEP = 2100000
 
 # ==========================================
-# 🌐 [LANGUAGE PACK]
+# 🌐 [LANGUAGE PACK] - 누락된 부분 완벽 보완
 # ==========================================
 LANG = {
     "KO": {
@@ -30,6 +30,10 @@ LANG = {
         "manifesto_quote": '"현실의 결핍은 무의식의 풍요로 채워진다.<br>이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."',
         "tokenomics": "🪙 Tokenomics : 비트코인 모델 적용",
         "token_desc": "• 총 발행 한도: 21,000,000 Dream Pts<br>• 반감기(Halving): 매 2,100,000 Pts 채굴 시 보상 50% 감소",
+        "desc_1_title": "1. 성장의 시각화 (Visualizing Growth)",
+        "desc_1_text": "저는 생존을 고민하는 평범한 사람입니다. 하지만 매일 밤 <b>꿈(무의식)</b>을 채굴하여 제 잠재력을 깨우고 있습니다. 여기에 쌓이는 <b>Dream Pts</b>는 제가 얼마나 깊이 각성했는지를 보여주는 <b>성장의 증명</b>입니다.",
+        "desc_2_title": "2. 현실의 변화 (X-Factor)",
+        "desc_2_text": "이곳에서 제련된 통찰은 <b>X(트위터)</b>와 현실의 콘텐츠가 됩니다. 무의식의 영감이 어떻게 <b>노출수(Traffic)</b>와 <b>수익(Revenue)</b>으로 변환되는지 목격하십시오.",
         "login_placeholder": "입장 코드를 입력하세요",
         "login_btn": "🗝️ 무의식 광산 입장하기",
         "login_error": "⛔ 유효하지 않은 코드입니다.",
@@ -83,6 +87,10 @@ LANG = {
         "manifesto_quote": '"The lack in reality is filled by the abundance of the unconscious.<br>This is a <b>Quantum Jump Laboratory</b> where an individual changes their destiny."',
         "tokenomics": "🪙 Tokenomics : Bitcoin Model",
         "token_desc": "• Max Supply: 21,000,000 Dream Pts<br>• Halving: Reward -50% every 2,100,000 Pts mined",
+        "desc_1_title": "1. Visualizing Growth",
+        "desc_1_text": "I am an ordinary person worrying about survival. But every night, I mine my <b>Dreams (Unconscious)</b> to awaken my potential. The accumulated <b>Dream Pts</b> are the <b>Proof of Growth</b> showing how deeply I have awakened.",
+        "desc_2_title": "2. X-Factor (Reality Change)",
+        "desc_2_text": "Insights refined here become content for <b>X (Twitter)</b> and reality. Witness how inspiration transforms into <b>Traffic</b> and <b>Revenue</b>.",
         "login_placeholder": "Enter Access Code",
         "login_btn": "🗝️ Enter the Mine",
         "login_error": "⛔ Invalid Code",
@@ -341,7 +349,10 @@ if not st.session_state.access_granted:
     <div class='defi-desc-text'>
         <span class='highlight-gold'>{T['tokenomics']}</span>
         <p>{T['token_desc']}</p>
-        <p>1. {T['desc_1_title']}<br>... (Manifesto omitted for brevity)</p>
+        <p><span class='highlight-bold'>{T['desc_1_title']}</span><br>
+        {T['desc_1_text']}</p>
+        <p><span class='highlight-bold'>{T['desc_2_title']}</span><br>
+        {T['desc_2_text']}</p>
     </div>
 </div>""", unsafe_allow_html=True)
         
