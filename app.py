@@ -6,15 +6,15 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v13.3", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v13.4", page_icon="🏛️", layout="wide")
 
-# 🔒 1. 커뮤니티 공통 암호 (입장용)
+# 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
 
-# 🛡️ 2. 관리자 보안 설정 (테스트용)
-# 👇 빌더님의 실제 아이디를 입력하세요.
+# 🛡️ 2. 관리자 보안 설정 (빌더님 전용)
+# 👇 빌더님 아이디 (이 아이디로 로그인해야만 관리자 메뉴가 보임)
 ADMIN_USER = "dreamer01"  
-# 👇 관리자 해제 비밀번호
+# 👇 관리자 잠금 해제 비밀번호 (테스트용)
 MASTER_KEY = "1234" 
 
 # 🪙 [TOKENOMICS]
@@ -22,7 +22,7 @@ MAX_SUPPLY = 21000000
 HALVING_STEP = 2100000
 
 # ==========================================
-# 🌐 [LANGUAGE PACK] - 누락된 부분 완벽 보완
+# 🌐 [LANGUAGE PACK]
 # ==========================================
 LANG = {
     "KO": {
@@ -141,20 +141,41 @@ LANG = {
     }
 }
 
-# --- CSS ---
+# --- CSS: 디자인 (가독성 & 관리자 숨김 패치) ---
 st.markdown("""
     <style>
+    /* 전체 테마 */
     .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
+    
+    /* 🔴 [핵심 수정 1] 개발자 도구(Manage app) 및 푸터 숨기기 */
+    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
+    footer { visibility: hidden !important; display: none !important; }
+    header { visibility: hidden !important; }
+    
+    /* 🔴 [핵심 수정 2] '지난 꿈 불러오기' 글씨 흰색 강제 적용 */
+    .streamlit-expanderHeader p { color: #FFFFFF !important; font-weight: bold !important; font-size: 1.1em !important; }
+    .streamlit-expanderHeader:hover p { color: #D4AF37 !important; } 
+    
+    /* 버튼 스타일 */
     button { background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important; background-color: #D4AF37 !important; border: none !important; opacity: 1 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important; padding: 0.5rem 1rem !important; border-radius: 0.5rem !important; }
     button p, button div, button span { color: #000000 !important; font-weight: 900 !important; font-size: 1rem !important; }
     button:hover { background: #FFD700 !important; transform: scale(1.02); }
+    
+    /* 입력창 */
     .stTextArea textarea, .stTextInput input { background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important; }
+    
+    /* 텍스트 색상 */
     label, .stMarkdown label, p, .stMetricLabel { color: #E0E0E0 !important; }
     .stMetricValue { color: #D4AF37 !important; }
+    
+    /* 컨테이너 */
     div[data-testid="column"] { background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px; }
+    
+    /* 툴팁 */
     div[data-baseweb="popover"], div[data-baseweb="tooltip"] { background-color: #1A1A1A !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important; max-width: 400px !important; }
     div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
-    header, footer { visibility: hidden !important; } .stAlert { display: none; } 
+    
+    /* Manifesto Style */
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
     .defi-desc-box { background-color: #111111 !important; padding: 30px !important; border-radius: 15px !important; border: 1px solid #333 !important; margin-top: 30px; margin-bottom: 30px; }
@@ -228,11 +249,10 @@ def get_ledger_data():
 
 # 🛡️ [SECURITY] 관리자 메뉴 (이중 잠금)
 if st.session_state.access_granted and st.session_state.user_id:
-    # 1. 특정 아이디(ADMIN_USER)로 로그인한 경우에만
-    if st.session_state.user_id == ADMIN_USER:
+    # 🔴 [핵심] 로그인한 ID가 ADMIN_USER와 같을 때만 버튼이 보임
+    if st.session_state.user_id == ADMIN_USER: 
         with st.sidebar:
             st.markdown("---")
-            # 2. 마스터 키 잠금
             if not st.session_state.is_admin_unlocked:
                 with st.expander(T['admin_unlock'], expanded=True):
                     master_input = st.text_input(T['master_key_ph'], type="password")
@@ -243,12 +263,8 @@ if st.session_state.access_granted and st.session_state.user_id:
                             st.rerun()
                         else:
                             st.error("Access Denied")
-            
-            # 3. 해제 후 메뉴 표시
             else:
                 st.success("🔓 Admin Mode Active")
-                
-                # 장부 (Ledger)
                 with st.expander(f"{T['ledger_title']}", expanded=True):
                     st.caption(T['ledger_desc'])
                     if st.button("🔄 Refresh"):
@@ -259,7 +275,6 @@ if st.session_state.access_granted and st.session_state.user_id:
                     else:
                         st.write("No active data.")
                 
-                # 소각 (Burn)
                 st.markdown("---")
                 with st.expander(f"{T['burn_title']}", expanded=False):
                     st.warning(T['burn_desc'])
@@ -417,6 +432,7 @@ if not st.session_state.user_id:
                 st.rerun()
     st.stop()
 
+# 🔴 [핵심 수정 3] 0점 해결을 위한 로직 강화
 def get_global_status(current_user):
     try:
         res_all = supabase.table("dreams").select("meaning, user_id, is_burned").execute()
@@ -436,9 +452,9 @@ def get_global_status(current_user):
                         score = int(part.replace(",", ""))
                     except: pass
                 
-                global_mined += score # 전체 채굴량은 소각 상관없이 역사적 총량 유지
+                global_mined += score 
                 
-                # 내 자산만 소각 여부 체크
+                # 🟢 is_burned가 TRUE가 아니면 모두 인정 (NULL, FALSE 모두 인정)
                 if d['user_id'] == current_user and d.get('is_burned') is not True:
                     my_total += score
                     my_count += 1
