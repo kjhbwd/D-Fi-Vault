@@ -6,7 +6,7 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v13.12", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="D-Fi Vault v13.13", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -206,8 +206,7 @@ st.markdown("""
     div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
     
     /* Registered Dreamers 스타일 (Cinzel + Gold) */
-    .dreamer-count { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.5em; text-align: center; padding: 10px; margin-top: 20px; border-top: 1px solid #333; }
-    .dreamer-count-main { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.2em; text-align: center; margin-top: 10px; opacity: 0.8; }
+    .dreamer-count-header { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.2em; font-weight: bold; text-align: right; }
     
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
@@ -236,9 +235,126 @@ try:
     supabase: Client = create_client(url, key)
 except: st.error("DB Connection Error")
 
-T = LANG[st.session_state.language]
+# ==========================================
+# 🟢 [CORE FUNCTION] 실시간 유저 수 조회
+# ==========================================
+def get_user_count():
+    try:
+        count_res = supabase.table("users").select("username", count="exact").execute()
+        return count_res.count if count_res.count else 0
+    except: return 0
 
-# --- 기능 함수들 ---
+# ==========================================
+# 🚪 1차 관문: Manifesto (입장 전) - 중앙 배치
+# ==========================================
+if not st.session_state.access_granted:
+    # 입장 전 화면: 중앙 상단 언어 설정
+    col_lang1, col_lang2, col_lang3 = st.columns([8, 2, 1])
+    with col_lang2:
+        lang_choice = st.radio("Language", ["KO", "EN"], horizontal=True, label_visibility="collapsed")
+        st.session_state.language = lang_choice
+    T = LANG[st.session_state.language] 
+
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(f"<div class='main-title'>{T['title']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='quote-box'>{T['manifesto_quote']}</div>", unsafe_allow_html=True)
+        
+        st.markdown(f"""<div class='defi-desc-box'>
+    <div class='defi-desc-text'>
+        <span class='highlight-gold'>{T['tokenomics']}</span>
+        <p>{T['token_desc']}</p>
+        <p><span class='highlight-bold'>{T['desc_1_title']}</span><br>
+        {T['desc_1_text']}</p>
+        <p><span class='highlight-bold'>{T['desc_2_title']}</span><br>
+        {T['desc_2_text']}</p>
+    </div>
+</div>""", unsafe_allow_html=True)
+        
+        with st.form("gate_form"):
+            input_code = st.text_input("Entry Code", type="password", placeholder=T['login_placeholder'])
+            if st.form_submit_button(T['login_btn']):
+                if input_code.strip() == COMMUNITY_PASSWORD:
+                    st.session_state.access_granted = True
+                    st.toast("✅ Access Granted.")
+                    time.sleep(0.5)
+                    st.rerun()
+                else: st.error(T['login_error'])
+        
+        # 입장 전 유저 수
+        user_count = get_user_count()
+        st.markdown(f"<div style='text-align:center; font-family:Cinzel; color:#D4AF37; margin-top:20px;'>✨ {T['reg_dreamers']} : {user_count:,}</div>", unsafe_allow_html=True)
+
+    st.stop()
+
+# ==========================================
+# 🏛️ 2차/3차 관문 및 메인 로직
+# ==========================================
+T = LANG[st.session_state.language] # 언어 세팅
+
+if not st.session_state.user_id:
+    # (ID 체크 및 로그인 화면) - 여기도 중앙 상단에 언어 설정 필요 시 추가 가능하지만 심플하게 유지
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align: center;'>{T['id_check_title']}</h2>", unsafe_allow_html=True)
+        if st.session_state.auth_step == "check_id":
+            with st.form("id_check_form"):
+                st.markdown(f"<p style='text-align:center; color:#AAA;'>{T['id_check_desc']}</p>", unsafe_allow_html=True)
+                input_id = st.text_input("Nickname", placeholder="Ex: dreamer01")
+                if st.form_submit_button(T['next_btn']):
+                    if input_id:
+                        clean_id = input_id.strip()
+                        res = supabase.table("users").select("*").eq("username", clean_id).execute()
+                        st.session_state.temp_username = clean_id
+                        if res.data: st.session_state.auth_step = "login"
+                        else: st.session_state.auth_step = "register"
+                        st.rerun()
+        elif st.session_state.auth_step == "login":
+            st.info(f"{T['welcome']}, **{st.session_state.temp_username}**!")
+            with st.form("login_pin_form"):
+                input_pin = st.text_input("PIN", type="password", max_chars=4, placeholder=T['pin_placeholder'])
+                c_a, c_b = st.columns(2)
+                with c_a: login_btn = st.form_submit_button(T['open_vault'])
+                with c_b: hint_btn = st.form_submit_button(T['hint_btn'])
+                if login_btn:
+                    res = supabase.table("users").select("*").eq("username", st.session_state.temp_username).eq("pin", input_pin).execute()
+                    if res.data:
+                        st.session_state.user_id = st.session_state.temp_username
+                        st.rerun()
+                    else: st.error("Wrong PIN")
+                if hint_btn:
+                    res = supabase.table("users").select("hint").eq("username", st.session_state.temp_username).execute()
+                    if res.data and res.data[0]['hint']: st.warning(f"💡 {res.data[0]['hint']}")
+            if st.button("⬅️ Back"):
+                st.session_state.auth_step = "check_id"
+                st.rerun()
+        elif st.session_state.auth_step == "register":
+            st.success(T['register_msg'])
+            with st.form("register_form"):
+                new_pin = st.text_input("PIN", type="password", max_chars=4, placeholder=T['pin_placeholder'])
+                hint = st.text_input("Hint", placeholder=T['hint_placeholder'])
+                if st.form_submit_button(T['register_btn']):
+                    if len(new_pin) >= 1:
+                        supabase.table("users").insert({"username": st.session_state.temp_username, "pin": new_pin, "hint": hint if hint else "None"}).execute()
+                        st.session_state.user_id = st.session_state.temp_username
+                        st.rerun()
+            if st.button("⬅️ Back"):
+                st.session_state.auth_step = "check_id"
+                st.rerun()
+    st.stop()
+
+# ==========================================
+# 💎 DASHBOARD (로그인 성공 후)
+# ==========================================
+
+# 1. 🟢 [LAYOUT FIX] 상단 헤더 분할 (좌: Era 정보 / 우: 언어설정 & Dreamers)
+user_count = get_user_count()
+_, _, _, _, current_era_tmp = 0,0,0,1,0 # 임시 초기화
+# DB 계산은 아래 get_global_status에서 하므로, 여기서는 레이아웃만 먼저 잡음
+
+# 2. 메인 로직 실행
 def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
     keywords = {
         "옷": "persona", "clothes": "persona", "uniform": "persona", "mask": "persona", "가면": "persona",
@@ -270,7 +386,6 @@ def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
             "general": [f"Write '{symbol}' on paper and carry it in your pocket.", f"Say 'I remember my dreams' 3 times before bed."]
         }
     }
-    
     interps = {
         "KO": {
             "persona": {"jung": "사회적 가면(Persona)입니다. 역할의 변화가 필요합니다.", "johnson": "맞지 않는 옷을 입고 있나요? 낡은 역할을 벗으세요.", "ko": "타인의 시선입니다. 본래 모습을 드러내세요."},
@@ -287,7 +402,6 @@ def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
             "general": {"jung": "An invitation from the unconscious. It holds intuitive solutions.", "johnson": "Feel the image with your heart, not your head.", "ko": "This is your story. Where do you stand?"}
         }
     }
-
     selected_ritual = random.choice(rituals[lang].get(detected_type, rituals[lang]["general"]))
     text_db = interps[lang].get(detected_type, interps[lang]["general"])
     return { "jung": text_db["jung"], "johnson": text_db["johnson"], "ko": text_db["ko"], "ritual": selected_ritual }
@@ -364,166 +478,24 @@ def get_global_status(current_user):
         return my_total, my_count, global_mined, current_multiplier, halving_era
     except: return 0, 0, 0, 1, 0
 
-# ==========================================
-# 🚪 1차 관문: Manifesto (입장 전) - 중앙 배치
-# ==========================================
-if not st.session_state.access_granted:
-    # 🟢 [수정] 첫 화면에서는 언어 설정을 화면 중앙 상단에 배치 (사이드바 아님)
-    col_lang1, col_lang2, col_lang3 = st.columns([8, 2, 1])
-    with col_lang2:
-        lang_choice = st.radio("Language", ["KO", "EN"], horizontal=True, label_visibility="collapsed")
-        st.session_state.language = lang_choice
-    T = LANG[st.session_state.language] # 언어 즉시 적용
-
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown(f"<div class='main-title'>{T['title']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='quote-box'>{T['manifesto_quote']}</div>", unsafe_allow_html=True)
-        
-        st.markdown(f"""<div class='defi-desc-box'>
-    <div class='defi-desc-text'>
-        <span class='highlight-gold'>{T['tokenomics']}</span>
-        <p>{T['token_desc']}</p>
-        <p><span class='highlight-bold'>{T['desc_1_title']}</span><br>
-        {T['desc_1_text']}</p>
-        <p><span class='highlight-bold'>{T['desc_2_title']}</span><br>
-        {T['desc_2_text']}</p>
-    </div>
-</div>""", unsafe_allow_html=True)
-        
-        with st.form("gate_form"):
-            input_code = st.text_input("Entry Code", type="password", placeholder=T['login_placeholder'])
-            if st.form_submit_button(T['login_btn']):
-                if input_code.strip() == COMMUNITY_PASSWORD:
-                    st.session_state.access_granted = True
-                    st.toast("✅ Access Granted.")
-                    time.sleep(0.5)
-                    st.rerun()
-                else: st.error(T['login_error'])
-        
-        # 🟢 [수정] 첫 화면용 Registered Dreamers (화면 하단)
-        try:
-            count_res = supabase.table("users").select("username", count="exact").execute()
-            user_count = count_res.count if count_res.count else 0
-        except: user_count = 0
-        st.markdown(f"<div class='dreamer-count-main'>✨ {T['reg_dreamers']} : {user_count:,}</div>", unsafe_allow_html=True)
-
-    st.stop()
-
-# ==========================================
-# 🚪 2차 관문 이후 (로그인 후) - 사이드바 사용
-# ==========================================
-# 🟢 [수정] 로그인 후에만 사이드바가 나타나도록 배치
-with st.sidebar:
-    # 1. 언어 설정
-    lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
-    if lang_choice != st.session_state.language:
-        st.session_state.language = lang_choice
-        st.rerun()
-    
-    T = LANG[st.session_state.language]
-    
-    # 2. Registered Dreamers (사이드바)
-    st.markdown("---")
-    try:
-        count_res = supabase.table("users").select("username", count="exact").execute()
-        user_count = count_res.count if count_res.count else 0
-    except: user_count = 0
-    st.markdown(f"<div class='dreamer-count'>✨ {T['reg_dreamers']} : {user_count:,}</div>", unsafe_allow_html=True)
-
-    # 3. 관리자 메뉴 (로그인한 관리자만)
-    if st.session_state.user_id == ADMIN_USER:
-        st.markdown("---")
-        if not st.session_state.is_admin_unlocked:
-            with st.expander(T['admin_unlock'], expanded=True):
-                master_input = st.text_input(T['master_key_ph'], type="password")
-                if st.button("Unlock"):
-                    if master_input == MASTER_KEY:
-                        st.session_state.is_admin_unlocked = True
-                        st.toast("🔓 Admin Mode Unlocked!")
-                        st.rerun()
-                    else: st.error("Access Denied")
-        else:
-            st.success("🔓 Admin Mode Active")
-            with st.expander(f"{T['ledger_title']}", expanded=True):
-                st.caption(T['ledger_desc'])
-                if st.button("🔄 Refresh"): st.rerun()
-                df_ledger = get_ledger_data()
-                if not df_ledger.empty: st.dataframe(df_ledger, use_container_width=True)
-                else: st.write("No active data.")
-            
-            st.markdown("---")
-            with st.expander(f"{T['burn_title']}", expanded=False):
-                st.warning(T['burn_desc'])
-                if st.button(T['burn_btn']):
-                    supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
-                    st.toast(T['burn_success'])
-                    time.sleep(2)
-                    st.rerun()
-            if st.button("🔒 Lock Admin"):
-                st.session_state.is_admin_unlocked = False
-                st.rerun()
-
-# --- 여기서부터 메인 앱 로직 (기존과 동일) ---
-if not st.session_state.user_id:
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align: center;'>{T['id_check_title']}</h2>", unsafe_allow_html=True)
-        if st.session_state.auth_step == "check_id":
-            with st.form("id_check_form"):
-                st.markdown(f"<p style='text-align:center; color:#AAA;'>{T['id_check_desc']}</p>", unsafe_allow_html=True)
-                input_id = st.text_input("Nickname", placeholder="Ex: dreamer01")
-                if st.form_submit_button(T['next_btn']):
-                    if input_id:
-                        clean_id = input_id.strip()
-                        res = supabase.table("users").select("*").eq("username", clean_id).execute()
-                        st.session_state.temp_username = clean_id
-                        if res.data: st.session_state.auth_step = "login"
-                        else: st.session_state.auth_step = "register"
-                        st.rerun()
-        elif st.session_state.auth_step == "login":
-            st.info(f"{T['welcome']}, **{st.session_state.temp_username}**!")
-            with st.form("login_pin_form"):
-                input_pin = st.text_input("PIN", type="password", max_chars=4, placeholder=T['pin_placeholder'])
-                c_a, c_b = st.columns(2)
-                with c_a: login_btn = st.form_submit_button(T['open_vault'])
-                with c_b: hint_btn = st.form_submit_button(T['hint_btn'])
-                if login_btn:
-                    res = supabase.table("users").select("*").eq("username", st.session_state.temp_username).eq("pin", input_pin).execute()
-                    if res.data:
-                        st.session_state.user_id = st.session_state.temp_username
-                        st.rerun()
-                    else: st.error("Wrong PIN")
-                if hint_btn:
-                    res = supabase.table("users").select("hint").eq("username", st.session_state.temp_username).execute()
-                    if res.data and res.data[0]['hint']: st.warning(f"💡 {res.data[0]['hint']}")
-            if st.button("⬅️ Back"):
-                st.session_state.auth_step = "check_id"
-                st.rerun()
-        elif st.session_state.auth_step == "register":
-            st.success(T['register_msg'])
-            with st.form("register_form"):
-                new_pin = st.text_input("PIN", type="password", max_chars=4, placeholder=T['pin_placeholder'])
-                hint = st.text_input("Hint", placeholder=T['hint_placeholder'])
-                if st.form_submit_button(T['register_btn']):
-                    if len(new_pin) >= 1:
-                        supabase.table("users").insert({"username": st.session_state.temp_username, "pin": new_pin, "hint": hint if hint else "None"}).execute()
-                        st.session_state.user_id = st.session_state.temp_username
-                        st.rerun()
-            if st.button("⬅️ Back"):
-                st.session_state.auth_step = "check_id"
-                st.rerun()
-    st.stop()
-
-# ==========================================
-# 🏛️ MAIN APP DASHBOARD
-# ==========================================
 my_assets, my_mining_count, global_supply, mining_multiplier, current_era = get_global_status(st.session_state.user_id)
 supply_progress = min(1.0, global_supply / MAX_SUPPLY)
 
-st.markdown(f"### 🪙 {T['dash_global']} (Era: {current_era + 1})")
+# 🟢 [CORE FIX] 메인 화면 최상단 레이아웃 (우측 상단 배치)
+c_header_1, c_header_2 = st.columns([7, 3])
+with c_header_1:
+    st.markdown(f"### 🪙 {T['dash_global']} (Era: {current_era + 1})")
+with c_header_2:
+    # 우측 상단: 언어 설정 & Dreamers
+    sub_c1, sub_c2 = st.columns(2)
+    with sub_c1:
+        lang_dash = st.radio("Language", ["KO", "EN"], label_visibility="collapsed", horizontal=True, key="dash_lang")
+        if lang_dash != st.session_state.language:
+            st.session_state.language = lang_dash
+            st.rerun()
+    with sub_c2:
+        st.markdown(f"<div class='dreamer-count-header'>✨ Dreamers: {user_count:,}</div>", unsafe_allow_html=True)
+
 st.progress(supply_progress)
 c_d1, c_d2, c_d3, c_d4 = st.columns(4)
 with c_d1: st.metric(T['dash_global'], f"{global_supply:,} / {MAX_SUPPLY:,}", delta=f"{supply_progress*100:.2f}%")
@@ -659,4 +631,41 @@ with col_right:
                 </div>
                 """, unsafe_allow_html=True)
                 time.sleep(3) 
+                st.rerun()
+
+# 🛡️ [SECURITY] 관리자 메뉴 & 디버깅 (사이드바)
+with st.sidebar:
+    st.markdown("---")
+    # 🔴 [범인 색출용 디버깅] - 나중에 삭제 가능
+    st.caption(f"🔑 ID Check: {st.session_state.user_id}")
+    
+    if st.session_state.user_id == ADMIN_USER:
+        if not st.session_state.is_admin_unlocked:
+            with st.expander(T['admin_unlock'], expanded=True):
+                master_input = st.text_input(T['master_key_ph'], type="password")
+                if st.button("Unlock"):
+                    if master_input == MASTER_KEY:
+                        st.session_state.is_admin_unlocked = True
+                        st.toast("🔓 Admin Mode Unlocked!")
+                        st.rerun()
+                    else: st.error("Access Denied")
+        else:
+            st.success("🔓 Admin Mode Active")
+            with st.expander(f"{T['ledger_title']}", expanded=True):
+                st.caption(T['ledger_desc'])
+                if st.button("🔄 Refresh"): st.rerun()
+                df_ledger = get_ledger_data()
+                if not df_ledger.empty: st.dataframe(df_ledger, use_container_width=True)
+                else: st.write("No active data.")
+            
+            st.markdown("---")
+            with st.expander(f"{T['burn_title']}", expanded=False):
+                st.warning(T['burn_desc'])
+                if st.button(T['burn_btn']):
+                    supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
+                    st.toast(T['burn_success'])
+                    time.sleep(2)
+                    st.rerun()
+            if st.button("🔒 Lock Admin"):
+                st.session_state.is_admin_unlocked = False
                 st.rerun()
