@@ -5,20 +5,20 @@ import datetime
 import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v12.6", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v12.7", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
 
-# --- CSS: 디자인 (가독성 & Deep Dark & Tooltip Fix) ---
+# --- CSS: 디자인 (툴팁 완벽 수정 & Deep Dark) ---
 st.markdown("""
     <style>
-    /* 1. 전체 테마 강제 적용 (Deep Black) */
+    /* 1. 전체 테마 강제 적용 */
     .stApp, .stApp > header, .stApp > footer, .stApp > main {
         background-color: #050505 !important; color: #FFFFFF !important;
     }
     
-    /* 2. 버튼 스타일 (황금색) */
+    /* 2. 버튼 스타일 */
     button {
         background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important;
         background-color: #D4AF37 !important; border: none !important; opacity: 1 !important;
@@ -29,12 +29,12 @@ st.markdown("""
     }
     button:hover { background: #FFD700 !important; transform: scale(1.02); }
     
-    /* 3. 입력창 및 텍스트 영역 스타일 */
+    /* 3. 입력창 스타일 */
     .stTextArea textarea, .stTextInput input {
         background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important;
     }
     
-    /* 4. 라벨(제목) 색상 강제 지정 */
+    /* 4. 라벨 색상 강제 지정 */
     label, .stMarkdown label, p {
         color: #E0E0E0 !important;
     }
@@ -44,15 +44,23 @@ st.markdown("""
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
     }
     
-    /* 6. [NEW] 툴팁(물음표) 가독성 패치 (검은 배경, 흰 글씨 강제) */
-    div[data-baseweb="tooltip"], div[data-baseweb="popover"] {
-        background-color: #333333 !important;
+    /* 🟢 [핵심 수정] 툴팁(물음표) 스타일 강제 오버라이딩 */
+    /* 팝오버 컨테이너 자체를 타격 */
+    div[data-baseweb="popover"], div[data-baseweb="tooltip"] {
+        background-color: #1A1A1A !important;
+        border: 1px solid #D4AF37 !important; /* 황금 테두리 */
+        border-radius: 8px !important;
+    }
+    /* 툴팁 내부 텍스트 색상 */
+    div[data-baseweb="popover"] div, div[data-baseweb="tooltip"] div {
         color: #FFFFFF !important;
+        background-color: transparent !important;
     }
-    div[data-baseweb="tooltip"] div, div[data-baseweb="popover"] div {
-        color: #FFFFFF !important; /* 내부 텍스트 흰색 강제 */
+    /* 화살표 부분도 색상 맞춤 (선택사항) */
+    div[data-baseweb="popover"] div[style*="background-color"], div[data-baseweb="tooltip"] div[style*="background-color"] {
+        background-color: #1A1A1A !important;
     }
-    
+
     /* 7. 헤더/푸터 및 경고 숨김 */
     header, footer { visibility: hidden !important; }
     .stAlert { display: none; } 
@@ -280,11 +288,19 @@ def get_daily_tokens(user):
         count = 0
         if res.data:
             for d in res.data:
+                # 오늘 날짜 확인 (서버 기준)
                 if d['created_at'].startswith(today_str):
                     meaning = d.get('meaning', "")
+                    # 🟢 [핵심 수정] Dream Pts와 Tokens 둘 다 인식하도록 수정
                     if meaning and "Value:" in meaning:
                         try:
-                            score_part = meaning.split("Value: ")[1].split(" Tokens")[0]
+                            if "Dream Pts" in meaning:
+                                score_part = meaning.split("Value: ")[1].split(" Dream Pts")[0]
+                            elif "Tokens" in meaning: # 예전 데이터 호환
+                                score_part = meaning.split("Value: ")[1].split(" Tokens")[0]
+                            else:
+                                score_part = "0"
+                                
                             score = int(score_part.replace(",", ""))
                             total_score += score
                             count += 1
@@ -385,7 +401,7 @@ with col_right:
     if 's1_key' not in st.session_state: st.session_state.s1_key = st.session_state.s1_val
     if 's2_key' not in st.session_state: st.session_state.s2_key = st.session_state.s2_val
 
-    # 🟢 [수정 완료] Stage 1 가이드 전면 교체 및 툴팁
+    # 가이드 멘트
     s1_help_text = """먼저 꿈을 훑어 보면서 꿈 이미지 각각에 대해 연상되는 것들을 전부 적어본다.
 꿈에 사람이나 사물 상황, 색, 소리에 대화 등이 등장했을 것이다.
 
