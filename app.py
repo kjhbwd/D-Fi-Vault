@@ -3,13 +3,19 @@ from supabase import create_client, Client
 import time
 import datetime
 import random
-import pandas as pd # 데이터프레임 출력을 위해 추가
+import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v13.1", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v13.3", page_icon="🏛️", layout="wide")
 
-# 🔒 커뮤니티 공통 암호
+# 🔒 1. 커뮤니티 공통 암호 (입장용)
 COMMUNITY_PASSWORD = "2026"
+
+# 🛡️ 2. 관리자 보안 설정 (테스트용)
+# 👇 여기에 빌더님이 로그인하실 아이디를 적어주세요! (예: "dreamer01")
+ADMIN_USER = "dreamer01"  
+# 👇 관리자 메뉴를 여는 마스터 키 (지금은 테스트니까 1234)
+MASTER_KEY = "1234" 
 
 # 🪙 [TOKENOMICS]
 MAX_SUPPLY = 21000000
@@ -39,7 +45,7 @@ LANG = {
         "hint_placeholder": "비밀번호 힌트 (선택사항)",
         "dash_global": "Global Mined",
         "dash_difficulty": "Mining Difficulty",
-        "dash_my_asset": "My Total Assets",
+        "dash_my_asset": "My Active Assets",
         "logout": "🔒 로그아웃",
         "left_title": "📓 무의식 원재료",
         "load_dreams": "📂 내 지난 꿈 불러오기",
@@ -64,7 +70,13 @@ LANG = {
         "mined_value": "채굴된 가치",
         "bonus_msg": "현재 반감기 보너스",
         "ledger_title": "📊 D-Fi 투명 장부 (Ledger)",
-        "ledger_desc": "모든 유저의 자산 보유 현황입니다. (바이백 기준 데이터)"
+        "ledger_desc": "모든 유저의 활성 자산 현황입니다. (소각된 자산 제외)",
+        "burn_title": "🔥 자산 소각 (Buy-back)",
+        "burn_desc": "보유한 자산을 현금화(바이백)하고 소각합니다. 꿈 기록은 유지되지만 점수는 0이 됩니다.",
+        "burn_btn": "💸 정산 및 소각 신청",
+        "burn_success": "✅ 정산 완료! 모든 포인트가 소각되었습니다.",
+        "admin_unlock": "🔒 Admin Unlock",
+        "master_key_ph": "Enter Master Key"
     },
     "EN": {
         "title": "D-Fi : Alchemy of the Unconscious",
@@ -86,7 +98,7 @@ LANG = {
         "hint_placeholder": "Password Hint (Optional)",
         "dash_global": "Global Mined",
         "dash_difficulty": "Mining Difficulty",
-        "dash_my_asset": "My Total Assets",
+        "dash_my_asset": "My Active Assets",
         "logout": "🔒 Logout",
         "left_title": "📓 Raw Material",
         "load_dreams": "📂 Load Past Dreams",
@@ -111,11 +123,17 @@ LANG = {
         "mined_value": "Mined Value",
         "bonus_msg": "Current Halving Bonus",
         "ledger_title": "📊 D-Fi Public Ledger",
-        "ledger_desc": "Real-time asset status of all users. (Standard for Buy-back)"
+        "ledger_desc": "Active assets of all users. (Burned assets excluded)",
+        "burn_title": "🔥 Asset Burn (Buy-back)",
+        "burn_desc": "Cash out (Buy-back) and burn your assets. Dream records remain, but points become 0.",
+        "burn_btn": "💸 Cash Out & Burn",
+        "burn_success": "✅ Burn Complete! Points reset to 0.",
+        "admin_unlock": "🔒 Admin Unlock",
+        "master_key_ph": "Enter Master Key"
     }
 }
 
-# --- CSS: 디자인 ---
+# --- CSS ---
 st.markdown("""
     <style>
     .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
@@ -136,8 +154,6 @@ st.markdown("""
     .highlight-gold { color: #FDB931 !important; font-weight: bold; font-size: 1.2em; margin-bottom: 15px; display: block; }
     .highlight-bold { color: #FFFFFF !important; font-weight: bold; }
     .faint-hint { color: #888888 !important; font-size: 0.9em; margin-top: 25px; font-style: italic; text-align: center; border-top: 1px solid #333; padding-top: 20px;}
-    
-    /* 장부 테이블 스타일 */
     .stDataFrame { border: 1px solid #333; }
     </style>
     """, unsafe_allow_html=True)
@@ -148,6 +164,7 @@ if 'user_id' not in st.session_state: st.session_state.user_id = None
 if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
 if 'language' not in st.session_state: st.session_state.language = "KO"
+if 'is_admin_unlocked' not in st.session_state: st.session_state.is_admin_unlocked = False 
 
 for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
     if key not in st.session_state: st.session_state[key] = "" if key != 'current_dream_id' else None
@@ -160,29 +177,25 @@ try:
     supabase: Client = create_client(url, key)
 except: st.error("DB Connection Error")
 
-# 🟢 [SIDEBAR] 언어 설정 및 장부(Ledger)
 with st.sidebar:
     lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
     if lang_choice != st.session_state.language:
         st.session_state.language = lang_choice
         st.rerun()
 
-# 언어 팩 로드
 T = LANG[st.session_state.language]
 
-# 🟢 [CORE FUNCTION] 모든 유저 자산 계산 (장부 생성용)
+# 🟢 [CORE FUNCTION] Ledger
 def get_ledger_data():
     try:
-        # 모든 꿈 데이터 가져오기 (컬럼: user_id, meaning)
-        res_all = supabase.table("dreams").select("user_id, meaning").execute()
-        ledger = {} # {user_id: [total_score, count]}
-        
+        res_all = supabase.table("dreams").select("user_id, meaning, is_burned").execute()
+        ledger = {} 
         if res_all.data:
             for d in res_all.data:
+                if d.get('is_burned') is True: continue
                 uid = d['user_id']
                 meaning = d.get('meaning', "")
                 score = 0
-                
                 if meaning and "Value:" in meaning:
                     try:
                         score_text = meaning.split("Value: ")[1]
@@ -191,43 +204,68 @@ def get_ledger_data():
                         else: part = "0"
                         score = int(part.replace(",", ""))
                     except: pass
-                
-                if uid not in ledger: ledger[uid] = [0, 0] # [총점, 개수]
+                if uid not in ledger: ledger[uid] = [0, 0]
                 ledger[uid][0] += score
                 ledger[uid][1] += 1
-                
-        # 리스트로 변환
         ledger_list = []
         for uid, data in ledger.items():
-            ledger_list.append({"User ID": uid, "Total Assets (Pts)": data[0], "Mined Blocks": data[1]})
-            
-        # 데이터프레임 생성 및 정렬
+            ledger_list.append({"User ID": uid, "Active Assets (Pts)": data[0], "Blocks": data[1]})
         df = pd.DataFrame(ledger_list)
         if not df.empty:
-            df = df.sort_values(by="Total Assets (Pts)", ascending=False).reset_index(drop=True)
-            # 순위(Rank) 컬럼 추가
+            df = df.sort_values(by="Active Assets (Pts)", ascending=False).reset_index(drop=True)
             df.index = df.index + 1
             df.index.name = "Rank"
         return df
     except: return pd.DataFrame()
 
-# 🟢 [SIDEBAR] 장부 표시
-if st.session_state.access_granted:
-    with st.sidebar:
-        st.markdown("---")
-        with st.expander(f"{T['ledger_title']}", expanded=False):
-            st.caption(T['ledger_desc'])
-            if st.button("🔄 Refresh Ledger"):
-                st.rerun()
-            df_ledger = get_ledger_data()
-            if not df_ledger.empty:
-                st.dataframe(df_ledger, use_container_width=True)
+# 🛡️ [SECURITY] 관리자 메뉴 (이중 잠금)
+if st.session_state.access_granted and st.session_state.user_id:
+    # 1. 특정 아이디(ADMIN_USER)로 로그인한 경우에만
+    if st.session_state.user_id == ADMIN_USER:
+        with st.sidebar:
+            st.markdown("---")
+            # 2. 마스터 키 잠금
+            if not st.session_state.is_admin_unlocked:
+                with st.expander(T['admin_unlock'], expanded=True):
+                    master_input = st.text_input(T['master_key_ph'], type="password")
+                    if st.button("Unlock"):
+                        if master_input == MASTER_KEY:
+                            st.session_state.is_admin_unlocked = True
+                            st.toast("🔓 Admin Mode Unlocked!")
+                            st.rerun()
+                        else:
+                            st.error("Access Denied")
+            
+            # 3. 해제 후 메뉴 표시
             else:
-                st.write("No data yet.")
+                st.success("🔓 Admin Mode Active")
+                
+                # 장부 (Ledger)
+                with st.expander(f"{T['ledger_title']}", expanded=True):
+                    st.caption(T['ledger_desc'])
+                    if st.button("🔄 Refresh"):
+                        st.rerun()
+                    df_ledger = get_ledger_data()
+                    if not df_ledger.empty:
+                        st.dataframe(df_ledger, use_container_width=True)
+                    else:
+                        st.write("No active data.")
+                
+                # 소각 (Burn)
+                st.markdown("---")
+                with st.expander(f"{T['burn_title']}", expanded=False):
+                    st.warning(T['burn_desc'])
+                    if st.button(T['burn_btn']):
+                        supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
+                        st.toast(T['burn_success'])
+                        time.sleep(2)
+                        st.rerun()
+                
+                if st.button("🔒 Lock Admin"):
+                    st.session_state.is_admin_unlocked = False
+                    st.rerun()
 
-# ==========================================
-# 🧠 [CORE LOGIC] 해석 엔진
-# ==========================================
+# ... (이하 로직 동일) ...
 def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
     keywords = {
         "옷": "persona", "clothes": "persona", "uniform": "persona", "mask": "persona", "가면": "persona",
@@ -292,9 +330,6 @@ def calculate_dream_quality_score(context, s1, s2, s3, s4, current_halving_multi
     final_score = int(raw_score * current_halving_multiplier)
     return min(10000, final_score)
 
-# ==========================================
-# 🚪 1차 관문 & 2차 관문 (동일 로직, 텍스트만 T[] 사용)
-# ==========================================
 if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
@@ -371,13 +406,9 @@ if not st.session_state.user_id:
                 st.rerun()
     st.stop()
 
-# ==========================================
-# 🏛️ MAIN APP
-# ==========================================
-# Global Status & Halving
 def get_global_status(current_user):
     try:
-        res_all = supabase.table("dreams").select("meaning, user_id").execute()
+        res_all = supabase.table("dreams").select("meaning, user_id, is_burned").execute()
         my_total = 0
         my_count = 0
         global_mined = 0
@@ -394,8 +425,10 @@ def get_global_status(current_user):
                         score = int(part.replace(",", ""))
                     except: pass
                 
-                global_mined += score
-                if d['user_id'] == current_user:
+                global_mined += score # 전체 채굴량은 소각 상관없이 역사적 총량 유지
+                
+                # 내 자산만 소각 여부 체크
+                if d['user_id'] == current_user and d.get('is_burned') is not True:
                     my_total += score
                     my_count += 1
         
