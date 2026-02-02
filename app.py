@@ -6,10 +6,8 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v13.9", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
-
-# 🟢 [CORE] 언어 설정 초기화
-if 'language' not in st.session_state: st.session_state.language = "KO"
+# 사이드바 강제 확장
+st.set_page_config(page_title="D-Fi Vault v13.11", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -61,8 +59,6 @@ LANG = {
         "save_btn": "💾 내 금고에 저장",
         "delete_btn": "🗑️ 삭제 (Delete)",
         "right_title": "🏛️ D-Fi 연금술",
-        
-        # 상세 가이드 (KO)
         "s1_label": "🚀 Stage 1: 연상 (Association)",
         "s1_help": """[수행 방법]
 1. 꿈을 '이미지' 단위로 쪼갭니다.
@@ -71,7 +67,6 @@ LANG = {
 
 ⚠️ 사각지대 (Critique):
 꿈 해몽 사전 금지: "뱀은 태몽이다" 같은 통속적 해석은 융 심리학에서 무의미합니다. 답은 오직 빌더님의 개인적 맥락(연상) 안에만 있습니다.""",
-        
         "s2_label": "🔍 Stage 2: 역학 (Dynamics)",
         "s2_help": """[수행 방법]
 1. 주관적 해석 원칙: 꿈의 모든 등장인물은 외부인이 아니라, **내 내면의 일부(Part of Me)**라고 가정합니다. (예: 화내는 상사 = 내 안의 억압적 자아)
@@ -79,7 +74,6 @@ LANG = {
 
 ⚠️ 사각지대 (Critique):
 외부 투사 금지: "저 상사가 나쁜 놈이네"라며 남 탓으로 돌리면 실패입니다. 꿈은 95% 이상이 나 자신의 이야기임을 인정해야 합니다.""",
-        
         "analyze_btn": "▼ 마스터 해석 가동 (ENTER)",
         "s3_label": "🏛️ Stage 3: 해석 (Interpretation)",
         "s4_label": "💎 Stage 4: 의례 (Ritual)",
@@ -90,7 +84,6 @@ LANG = {
 
 ⚠️ 사각지대 (Critique):
 지적 유희 경계: 생각만 하고 끝내는 것은 "영혼에 대한 예의"가 아닙니다. 반드시 몸을 움직여 마침표를 찍으십시오.""",
-        
         "mint_btn": "💎 최종 자산 발행 (Mint Token)",
         "update_btn": "🏛️ 자산 정보 업데이트",
         "success_msg": "🎉 채굴 성공! (Minted)",
@@ -103,7 +96,8 @@ LANG = {
         "burn_btn": "💸 정산 및 소각 신청",
         "burn_success": "✅ 정산 완료! 모든 포인트가 소각되었습니다.",
         "admin_unlock": "🔒 Admin Unlock",
-        "master_key_ph": "Enter Master Key"
+        "master_key_ph": "Enter Master Key",
+        "reg_dreamers": "Registered Dreamers"
     },
     "EN": {
         "title": "D-Fi : Alchemy of the Unconscious",
@@ -140,8 +134,6 @@ LANG = {
         "save_btn": "💾 Save to Vault",
         "delete_btn": "🗑️ Delete",
         "right_title": "🏛️ D-Fi Alchemy",
-        
-        # 상세 가이드 (EN)
         "s1_label": "🚀 Stage 1: Association",
         "s1_help": """[How to]
 1. Break the dream down into 'Images'.
@@ -150,7 +142,6 @@ LANG = {
 
 ⚠️ Critique:
 No Dream Dictionaries: Standard interpretations like "Snake = Wealth" are useless in Jungian psychology. The answer lies only in YOUR personal context.""",
-        
         "s2_label": "🔍 Stage 2: Dynamics",
         "s2_help": """[How to]
 1. Subjective Interpretation: Assume every character in the dream is a **Part of Me**, not the actual person. (e.g., Angry Boss = My internal oppressive self)
@@ -158,7 +149,6 @@ No Dream Dictionaries: Standard interpretations like "Snake = Wealth" are useles
 
 ⚠️ Critique:
 No Projection: Do not blame the external person ("That boss is bad"). Acknowledge that the dream is 95% about your own inner story.""",
-        
         "analyze_btn": "▼ Run Master Analysis (ENTER)",
         "s3_label": "🏛️ Stage 3: Interpretation",
         "s4_label": "💎 Stage 4: Ritual",
@@ -169,7 +159,6 @@ Perform a concrete action to Honor the message.
 
 ⚠️ Critique:
 Avoid Intellectual Games: Thinking alone is not enough. You must move your body to complete the ritual.""",
-        
         "mint_btn": "💎 Mint Token",
         "update_btn": "🏛️ Update Asset",
         "success_msg": "🎉 Minting Successful!",
@@ -182,27 +171,22 @@ Avoid Intellectual Games: Thinking alone is not enough. You must move your body 
         "burn_btn": "💸 Cash Out & Burn",
         "burn_success": "✅ Burn Complete! Points reset to 0.",
         "admin_unlock": "🔒 Admin Unlock",
-        "master_key_ph": "Enter Master Key"
+        "master_key_ph": "Enter Master Key",
+        "reg_dreamers": "Registered Dreamers"
     }
 }
 
-# --- CSS: 디자인 (헤더/사이드바 블랙 통일 + 가독성 확보) ---
+# --- CSS: 디자인 (올블랙 & 가독성 & 폰트) ---
 st.markdown("""
     <style>
-    /* 1. 전체 배경 및 텍스트 */
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+    
     .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
-    
-    /* 2. 상단 헤더 강제 블랙 (흰색 막대 제거) */
     header { background-color: #050505 !important; }
-    
-    /* 3. 사이드바 강제 다크모드 (흰색 배경 제거) */
     [data-testid="stSidebar"] { background-color: #111111 !important; border-right: 1px solid #333 !important; }
-    
-    /* 4. 개발자 도구 숨김 (메뉴 버튼은 유지) */
     [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
     
-    /* 5. 텍스트 및 버튼 스타일 */
     .streamlit-expanderHeader p { color: #FFFFFF !important; font-weight: bold !important; font-size: 1.1em !important; }
     .streamlit-expanderHeader:hover p { color: #D4AF37 !important; } 
     
@@ -213,8 +197,14 @@ st.markdown("""
     .stTextArea textarea, .stTextInput input { background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important; }
     label, .stMarkdown label, p, .stMetricLabel { color: #E0E0E0 !important; }
     .stMetricValue { color: #D4AF37 !important; }
-    
     div[data-testid="column"] { background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px; }
+    
+    /* 툴팁 스타일 */
+    div[data-baseweb="popover"], div[data-baseweb="tooltip"] { background-color: #1A1A1A !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important; max-width: 400px !important; }
+    div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
+    
+    /* Registered Dreamers 스타일 */
+    .dreamer-count { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.2em; text-align: center; padding: 10px; border-top: 1px solid #333; margin-top: 20px; }
     
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
@@ -230,7 +220,7 @@ if 'access_granted' not in st.session_state: st.session_state.access_granted = F
 if 'user_id' not in st.session_state: st.session_state.user_id = None
 if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
-# if 'language' ... (위에서 처리됨)
+if 'language' not in st.session_state: st.session_state.language = "KO"
 if 'is_admin_unlocked' not in st.session_state: st.session_state.is_admin_unlocked = False 
 
 for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
@@ -244,24 +234,105 @@ try:
     supabase: Client = create_client(url, key)
 except: st.error("DB Connection Error")
 
-# 🟢 [CORE LAYOUT] 언어 설정 위치 분기
-# 로그인 전(Manifesto)에는 화면 중앙 상단에 표시 / 로그인 후에는 사이드바에 표시
-if not st.session_state.access_granted:
-    # 로그인 전: 메인 화면 상단
-    lang_col1, lang_col2, lang_col3 = st.columns([8, 2, 1])
-    with lang_col2:
-        st.session_state.language = st.radio("Language", ["KO", "EN"], horizontal=True, label_visibility="collapsed")
-else:
-    # 로그인 후: 사이드바 (기존 유지)
-    with st.sidebar:
-        lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
-        if lang_choice != st.session_state.language:
-            st.session_state.language = lang_choice
-            st.rerun()
+# =========================================================
+# 🟢 [GLOBAL SIDEBAR] 모든 화면에서 항상 보이는 공통 구역
+# =========================================================
+with st.sidebar:
+    # 1. 언어 설정 (항상 최상단 노출)
+    lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
+    if lang_choice != st.session_state.language:
+        st.session_state.language = lang_choice
+        st.rerun()
+    
+    T = LANG[st.session_state.language]
+    
+    # 2. Registered Dreamers 카운터 (신규 기능)
+    st.markdown("---")
+    try:
+        # users 테이블의 전체 행 개수(count)만 가져옴
+        count_res = supabase.table("users").select("username", count="exact").execute()
+        user_count = count_res.count if count_res.count else 0
+    except:
+        user_count = 0 # 에러 시 0으로 표시
+        
+    st.markdown(f"""
+        <div class='dreamer-count'>
+            ✨ {T['reg_dreamers']} : {user_count:,}
+        </div>
+    """, unsafe_allow_html=True)
 
-T = LANG[st.session_state.language]
+    # 3. 관리자 메뉴 (로그인한 관리자에게만 노출)
+    if st.session_state.user_id == ADMIN_USER:
+        st.markdown("---")
+        if not st.session_state.is_admin_unlocked:
+            with st.expander(T['admin_unlock'], expanded=True):
+                master_input = st.text_input(T['master_key_ph'], type="password")
+                if st.button("Unlock"):
+                    if master_input == MASTER_KEY:
+                        st.session_state.is_admin_unlocked = True
+                        st.toast("🔓 Admin Mode Unlocked!")
+                        st.rerun()
+                    else:
+                        st.error("Access Denied")
+        else:
+            st.success("🔓 Admin Mode Active")
+            
+            # 장부 보기 함수 재사용을 위해 아래 정의된 함수를 여기서 호출하려면 순서상 에러가 날 수 있음.
+            # 해결책: get_ledger_data 함수를 이 블록 위로 올리거나, 여기서 직접 쿼리.
+            # 깔끔하게 함수 정의를 상단으로 올리는 것이 좋으나, 편의상 여기서 직접 쿼리 실행
+            try:
+                res_all = supabase.table("dreams").select("user_id, meaning, is_burned").execute()
+                ledger = {} 
+                if res_all.data:
+                    for d in res_all.data:
+                        if d.get('is_burned') is True: continue
+                        uid = d['user_id']
+                        meaning = d.get('meaning', "")
+                        score = 0
+                        if meaning and "Value:" in meaning:
+                            try:
+                                score_text = meaning.split("Value: ")[1]
+                                if "Dream Pts" in score_text: part = score_text.split(" Dream Pts")[0]
+                                elif "Tokens" in score_text: part = score_text.split(" Tokens")[0]
+                                else: part = "0"
+                                score = int(part.replace(",", ""))
+                            except: pass
+                        if uid not in ledger: ledger[uid] = [0, 0]
+                        ledger[uid][0] += score
+                        ledger[uid][1] += 1
+                ledger_list = []
+                for uid, data in ledger.items():
+                    ledger_list.append({"User ID": uid, "Active Assets (Pts)": data[0], "Blocks": data[1]})
+                df_ledger = pd.DataFrame(ledger_list)
+                if not df_ledger.empty:
+                    df_ledger = df_ledger.sort_values(by="Active Assets (Pts)", ascending=False).reset_index(drop=True)
+                    df_ledger.index = df_ledger.index + 1
+                    df_ledger.index.name = "Rank"
+            except: df_ledger = pd.DataFrame()
 
-# ... (Analysis, Calculation, Ledger Functions same as before) ...
+            with st.expander(f"{T['ledger_title']}", expanded=True):
+                st.caption(T['ledger_desc'])
+                if st.button("🔄 Refresh"):
+                    st.rerun()
+                if not df_ledger.empty:
+                    st.dataframe(df_ledger, use_container_width=True)
+                else:
+                    st.write("No active data.")
+            
+            st.markdown("---")
+            with st.expander(f"{T['burn_title']}", expanded=False):
+                st.warning(T['burn_desc'])
+                if st.button(T['burn_btn']):
+                    supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
+                    st.toast(T['burn_success'])
+                    time.sleep(2)
+                    st.rerun()
+            
+            if st.button("🔒 Lock Admin"):
+                st.session_state.is_admin_unlocked = False
+                st.rerun()
+
+# ... (Analysis Engine) ...
 def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
     keywords = {
         "옷": "persona", "clothes": "persona", "uniform": "persona", "mask": "persona", "가면": "persona",
@@ -325,38 +396,6 @@ def calculate_dream_quality_score(context, s1, s2, s3, s4, current_halving_multi
     raw_score = base_score + score_context + score_s1 + score_s2 + score_s3 + score_s4
     final_score = int(raw_score * current_halving_multiplier)
     return min(10000, final_score)
-
-def get_ledger_data():
-    try:
-        res_all = supabase.table("dreams").select("user_id, meaning, is_burned").execute()
-        ledger = {} 
-        if res_all.data:
-            for d in res_all.data:
-                if d.get('is_burned') is True: continue
-                uid = d['user_id']
-                meaning = d.get('meaning', "")
-                score = 0
-                if meaning and "Value:" in meaning:
-                    try:
-                        score_text = meaning.split("Value: ")[1]
-                        if "Dream Pts" in score_text: part = score_text.split(" Dream Pts")[0]
-                        elif "Tokens" in score_text: part = score_text.split(" Tokens")[0]
-                        else: part = "0"
-                        score = int(part.replace(",", ""))
-                    except: pass
-                if uid not in ledger: ledger[uid] = [0, 0]
-                ledger[uid][0] += score
-                ledger[uid][1] += 1
-        ledger_list = []
-        for uid, data in ledger.items():
-            ledger_list.append({"User ID": uid, "Active Assets (Pts)": data[0], "Blocks": data[1]})
-        df = pd.DataFrame(ledger_list)
-        if not df.empty:
-            df = df.sort_values(by="Active Assets (Pts)", ascending=False).reset_index(drop=True)
-            df.index = df.index + 1
-            df.index.name = "Rank"
-        return df
-    except: return pd.DataFrame()
 
 def get_global_status(current_user):
     try:
@@ -616,44 +655,3 @@ with col_right:
                 """, unsafe_allow_html=True)
                 time.sleep(3) 
                 st.rerun()
-
-# 🛡️ [SECURITY] 관리자 메뉴 (이중 잠금)
-if st.session_state.access_granted and st.session_state.user_id:
-    # 🔴 [핵심] 로그인한 ID가 ADMIN_USER와 같을 때만 버튼이 보임
-    if st.session_state.user_id == ADMIN_USER: 
-        with st.sidebar:
-            st.markdown("---")
-            if not st.session_state.is_admin_unlocked:
-                with st.expander(T['admin_unlock'], expanded=True):
-                    master_input = st.text_input(T['master_key_ph'], type="password")
-                    if st.button("Unlock"):
-                        if master_input == MASTER_KEY:
-                            st.session_state.is_admin_unlocked = True
-                            st.toast("🔓 Admin Mode Unlocked!")
-                            st.rerun()
-                        else:
-                            st.error("Access Denied")
-            else:
-                st.success("🔓 Admin Mode Active")
-                with st.expander(f"{T['ledger_title']}", expanded=True):
-                    st.caption(T['ledger_desc'])
-                    if st.button("🔄 Refresh"):
-                        st.rerun()
-                    df_ledger = get_ledger_data()
-                    if not df_ledger.empty:
-                        st.dataframe(df_ledger, use_container_width=True)
-                    else:
-                        st.write("No active data.")
-                
-                st.markdown("---")
-                with st.expander(f"{T['burn_title']}", expanded=False):
-                    st.warning(T['burn_desc'])
-                    if st.button(T['burn_btn']):
-                        supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
-                        st.toast(T['burn_success'])
-                        time.sleep(2)
-                        st.rerun()
-                
-                if st.button("🔒 Lock Admin"):
-                    st.session_state.is_admin_unlocked = False
-                    st.rerun()
