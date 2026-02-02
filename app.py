@@ -6,10 +6,10 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-# 사이드바 강제 확장 설정 유지
-st.set_page_config(page_title="D-Fi Vault v13.6", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+# 사이드바 강제 확장 (펼쳐진 상태로 시작)
+st.set_page_config(page_title="D-Fi Vault v13.7", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
-# 🔒 1. 커뮤니티 공통 암호 (여기 2026 맞습니다!)
+# 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
 
 # 🛡️ 2. 관리자 보안 설정
@@ -140,36 +140,43 @@ LANG = {
     }
 }
 
-# --- CSS: 디자인 ---
+# --- CSS: 디자인 (사이드바 숨김 문제 해결!) ---
 st.markdown("""
     <style>
+    /* 전체 배경 */
     .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
     
-    /* 개발자 도구만 숨김 (사이드바 버튼은 유지) */
-    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
-    footer { visibility: hidden !important; display: none !important; }
+    /* 🔴 [복구] 사이드바 버튼을 가리던 CSS를 모두 제거했습니다. */
+    /* 이제 상단 바와 사이드바 버튼이 정상적으로 보입니다. */
     
+    /* 확장 메뉴 헤더 */
     .streamlit-expanderHeader p { color: #FFFFFF !important; font-weight: bold !important; font-size: 1.1em !important; }
     .streamlit-expanderHeader:hover p { color: #D4AF37 !important; } 
     
+    /* 버튼 스타일 */
     button { background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important; background-color: #D4AF37 !important; border: none !important; opacity: 1 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important; padding: 0.5rem 1rem !important; border-radius: 0.5rem !important; }
     button p, button div, button span { color: #000000 !important; font-weight: 900 !important; font-size: 1rem !important; }
     button:hover { background: #FFD700 !important; transform: scale(1.02); }
+    
+    /* 입력창 스타일 */
     .stTextArea textarea, .stTextInput input { background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important; }
     label, .stMarkdown label, p, .stMetricLabel { color: #E0E0E0 !important; }
     .stMetricValue { color: #D4AF37 !important; }
+    
+    /* 박스 컨테이너 */
     div[data-testid="column"] { background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px; }
+    
+    /* 툴팁 */
     div[data-baseweb="popover"], div[data-baseweb="tooltip"] { background-color: #1A1A1A !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important; max-width: 400px !important; }
     div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
     
+    /* 제목 및 텍스트 스타일 */
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
     .defi-desc-box { background-color: #111111 !important; padding: 30px !important; border-radius: 15px !important; border: 1px solid #333 !important; margin-top: 30px; margin-bottom: 30px; }
     .defi-desc-text { color: #BBBBBB !important; font-size: 1.0em; line-height: 1.8; font-family: sans-serif; }
     .highlight-gold { color: #FDB931 !important; font-weight: bold; font-size: 1.2em; margin-bottom: 15px; display: block; }
     .highlight-bold { color: #FFFFFF !important; font-weight: bold; }
-    .faint-hint { color: #888888 !important; font-size: 0.9em; margin-top: 25px; font-style: italic; text-align: center; border-top: 1px solid #333; padding-top: 20px;}
-    .stDataFrame { border: 1px solid #333; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -346,11 +353,10 @@ if not st.session_state.access_granted:
     </div>
 </div>""", unsafe_allow_html=True)
         
-        # 🔴 [핵심 수정] .strip() 추가로 공백 문제 해결
         with st.form("gate_form"):
             input_code = st.text_input("Entry Code", type="password", placeholder=T['login_placeholder'])
             if st.form_submit_button(T['login_btn']):
-                if input_code.strip() == COMMUNITY_PASSWORD:  # <--- 여기서 .strip()이 공백을 제거해줍니다!
+                if input_code.strip() == COMMUNITY_PASSWORD:
                     st.session_state.access_granted = True
                     st.toast("✅ Access Granted.")
                     time.sleep(0.5)
@@ -372,7 +378,6 @@ if not st.session_state.user_id:
                 input_id = st.text_input("Nickname", placeholder="Ex: dreamer01")
                 if st.form_submit_button(T['next_btn']):
                     if input_id:
-                        # 🔴 [추가 수정] 아이디 공백도 제거
                         clean_id = input_id.strip()
                         res = supabase.table("users").select("*").eq("username", clean_id).execute()
                         st.session_state.temp_username = clean_id
