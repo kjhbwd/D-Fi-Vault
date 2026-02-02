@@ -10,7 +10,7 @@ st.set_page_config(page_title="D-Fi Vault v12.7", page_icon="🏛️", layout="w
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
 
-# --- CSS: 디자인 (툴팁 완벽 수정 & Deep Dark) ---
+# --- CSS: 디자인 (툴팁 강제 수정 & Deep Dark) ---
 st.markdown("""
     <style>
     /* 1. 전체 테마 강제 적용 */
@@ -44,20 +44,20 @@ st.markdown("""
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
     }
     
-    /* 🟢 [핵심 수정] 툴팁(물음표) 스타일 강제 오버라이딩 */
-    /* 팝오버 컨테이너 자체를 타격 */
+    /* 🟢 [핵심 수정] 툴팁(물음표) 스타일 강제 오버라이딩 (Browser Style Injection) */
     div[data-baseweb="popover"], div[data-baseweb="tooltip"] {
         background-color: #1A1A1A !important;
-        border: 1px solid #D4AF37 !important; /* 황금 테두리 */
+        border: 1px solid #D4AF37 !important;
         border-radius: 8px !important;
+        max-width: 400px !important;
     }
     /* 툴팁 내부 텍스트 색상 */
-    div[data-baseweb="popover"] div, div[data-baseweb="tooltip"] div {
+    div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div {
         color: #FFFFFF !important;
-        background-color: transparent !important;
+        background-color: #1A1A1A !important;
     }
-    /* 화살표 부분도 색상 맞춤 (선택사항) */
-    div[data-baseweb="popover"] div[style*="background-color"], div[data-baseweb="tooltip"] div[style*="background-color"] {
+    /* 화살표 제거 혹은 색상 맞춤 */
+    div[data-baseweb="popover"] .arrow, div[data-baseweb="tooltip"] .arrow {
         background-color: #1A1A1A !important;
     }
 
@@ -103,7 +103,7 @@ try:
 except: st.error("DB 연결 오류")
 
 # ==========================================
-# 🧠 [CORE LOGIC] 문맥 반영 심층 해석 엔진
+# 🧠 [CORE LOGIC] 문맥 반영 심층 해석 & 점수 채굴 엔진
 # ==========================================
 def analyze_dream_engine_v2(context, symbol, dynamics):
     keywords = {
@@ -180,6 +180,22 @@ def analyze_dream_engine_v2(context, symbol, dynamics):
     result = interpretations.get(detected_type, interpretations["general"])
     result['ritual'] = selected_ritual
     return result
+
+# 🟢 [질적 평가 알고리즘] 꿈의 정성도를 점수로 환산
+def calculate_dream_quality_score(context, s1, s2, s3, s4):
+    base_score = 1000 # 기본 점수
+    
+    # 글자 수 기반 정성 평가 (단순 길이 x 가중치)
+    score_context = len(context) * 2 if context else 0
+    score_s1 = len(s1) * 5 if s1 else 0
+    score_s2 = len(s2) * 5 if s2 else 0
+    score_s3 = len(s3) * 5 if s3 else 0 # 해석은 자동생성이지만 수정 가능성을 염두
+    score_s4 = len(s4) * 10 if s4 else 0 # 의례 실천이 가장 중요하므로 가중치 높음
+    
+    total_score = base_score + score_context + score_s1 + score_s2 + score_s3 + score_s4
+    
+    # 너무 큰 점수 방지 (Max 10,000)
+    return min(10000, total_score)
 
 # ==========================================
 # 🚪 1차 관문: Manifesto
@@ -288,19 +304,20 @@ def get_daily_tokens(user):
         count = 0
         if res.data:
             for d in res.data:
-                # 오늘 날짜 확인 (서버 기준)
+                # 오늘 날짜 확인 (또는 전체 누적을 원하시면 이 if문 제거 가능)
                 if d['created_at'].startswith(today_str):
                     meaning = d.get('meaning', "")
-                    # 🟢 [핵심 수정] Dream Pts와 Tokens 둘 다 인식하도록 수정
+                    # 🟢 [핵심 수정] Dream Pts와 Tokens 둘 다 인식 (계산기 수리)
                     if meaning and "Value:" in meaning:
                         try:
-                            if "Dream Pts" in meaning:
-                                score_part = meaning.split("Value: ")[1].split(" Dream Pts")[0]
-                            elif "Tokens" in meaning: # 예전 데이터 호환
-                                score_part = meaning.split("Value: ")[1].split(" Tokens")[0]
+                            score_text = meaning.split("Value: ")[1]
+                            if "Dream Pts" in score_text:
+                                score_part = score_text.split(" Dream Pts")[0]
+                            elif "Tokens" in score_text:
+                                score_part = score_text.split(" Tokens")[0]
                             else:
                                 score_part = "0"
-                                
+                            
                             score = int(score_part.replace(",", ""))
                             total_score += score
                             count += 1
@@ -312,6 +329,7 @@ daily_sum, daily_count = get_daily_tokens(st.session_state.user_id)
 
 col_dash1, col_dash2, col_dash3 = st.columns([0.6, 0.2, 0.2])
 with col_dash1: st.markdown(f"### 🏛️ Vault of {st.session_state.user_id}")
+# 🟢 [단위 수정] 0 T -> 0 Dream Pts
 with col_dash2: st.metric(label="Today's Mining", value=f"{daily_sum:,} Dream Pts", delta=f"{daily_count}건")
 with col_dash3:
     if st.button("🔒 로그아웃"):
@@ -401,7 +419,6 @@ with col_right:
     if 's1_key' not in st.session_state: st.session_state.s1_key = st.session_state.s1_val
     if 's2_key' not in st.session_state: st.session_state.s2_key = st.session_state.s2_val
 
-    # 가이드 멘트
     s1_help_text = """먼저 꿈을 훑어 보면서 꿈 이미지 각각에 대해 연상되는 것들을 전부 적어본다.
 꿈에 사람이나 사물 상황, 색, 소리에 대화 등이 등장했을 것이다.
 
@@ -466,8 +483,15 @@ with col_right:
         final_btn = "🏛️ 자산 정보 업데이트" if st.session_state.is_minted else "💎 최종 자산 발행 (Mint Token)"
         if st.form_submit_button(final_btn):
             if st.session_state.s1_val and s4:
-                token_val = min(5000, 1000 + len(st.session_state.s1_val + s4)*10)
-                new_val_str = f"Value: {token_val} Dream Pts"
+                # 🟢 [질적 평가 점수 적용]
+                token_val = calculate_dream_quality_score(
+                    st.session_state.dream_context,
+                    st.session_state.s1_val,
+                    st.session_state.s2_val,
+                    st.session_state.s3_val,
+                    s4
+                )
+                new_val_str = f"Value: {token_val:,} Dream Pts"
                 
                 payload = {
                     "symbol": st.session_state.s1_val, 
@@ -486,7 +510,9 @@ with col_right:
                     if data.data: st.session_state.current_dream_id = data.data[0]['id']
                 st.session_state.is_minted = True
                 st.session_state.existing_value = new_val_str 
+                
+                # 🟢 [3초 메시지]
                 st.balloons()
-                st.success(f"✅ 의례(Ritual) 등록 완료!\n\n💰 {new_val_str}")
-                time.sleep(3)
+                st.success(f"✅ 의례 등록 완료! \n\n⛏️ 채굴된 가치: {token_val:,} Dream Pts")
+                time.sleep(3) # 3초 대기
                 st.rerun()
