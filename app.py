@@ -5,12 +5,12 @@ import datetime
 import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v12.5", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v12.6", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
 
-# --- CSS: 디자인 (가독성 & Deep Dark 테마 강화) ---
+# --- CSS: 디자인 (가독성 & Deep Dark & Tooltip Fix) ---
 st.markdown("""
     <style>
     /* 1. 전체 테마 강제 적용 (Deep Black) */
@@ -34,7 +34,7 @@ st.markdown("""
         background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important;
     }
     
-    /* 4. [가독성 패치] 라벨(제목) 색상 강제 지정 */
+    /* 4. 라벨(제목) 색상 강제 지정 */
     label, .stMarkdown label, p {
         color: #E0E0E0 !important;
     }
@@ -44,7 +44,16 @@ st.markdown("""
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
     }
     
-    /* 6. 헤더/푸터 및 경고 숨김 */
+    /* 6. [NEW] 툴팁(물음표) 가독성 패치 (검은 배경, 흰 글씨 강제) */
+    div[data-baseweb="tooltip"], div[data-baseweb="popover"] {
+        background-color: #333333 !important;
+        color: #FFFFFF !important;
+    }
+    div[data-baseweb="tooltip"] div, div[data-baseweb="popover"] div {
+        color: #FFFFFF !important; /* 내부 텍스트 흰색 강제 */
+    }
+    
+    /* 7. 헤더/푸터 및 경고 숨김 */
     header, footer { visibility: hidden !important; }
     .stAlert { display: none; } 
     
@@ -69,19 +78,16 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # [SESSION STATE & CONNECTION]
-# 세션 상태 초기화
 if 'access_granted' not in st.session_state: st.session_state.access_granted = False
 if 'user_id' not in st.session_state: st.session_state.user_id = None
 if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
 
-# 데이터 저장용 변수들
 for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
     if key not in st.session_state: st.session_state[key] = "" if key != 'current_dream_id' else None
 if 'interpretation_ready' not in st.session_state: st.session_state.interpretation_ready = False
 if 'is_minted' not in st.session_state: st.session_state.is_minted = False
 
-# DB 연결
 try:
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
@@ -89,16 +95,9 @@ try:
 except: st.error("DB 연결 오류")
 
 # ==========================================
-# 🧠 [CORE LOGIC] 문맥 반영 심층 해석 엔진 (v12.5)
+# 🧠 [CORE LOGIC] 문맥 반영 심층 해석 엔진
 # ==========================================
 def analyze_dream_engine_v2(context, symbol, dynamics):
-    """
-    context: 전체 꿈 내용 (분위기 파악용)
-    symbol: 1단계 연상
-    dynamics: 2단계 역학
-    """
-    
-    # 1. 키워드 감지 (Archetype Detection)
     keywords = {
         "옷": "persona", "의복": "persona", "체육복": "persona", "유니폼": "persona", "가면": "persona",
         "쫓김": "shadow", "도망": "shadow", "괴물": "shadow", "귀신": "shadow", "공격": "shadow",
@@ -113,7 +112,6 @@ def analyze_dream_engine_v2(context, symbol, dynamics):
     for key, val in keywords.items():
         if key in full_input: detected_type = val; break
 
-    # 2. 실천 의례(Ritual) 랜덤 다양화 (Random Action Generator)
     ritual_options = {
         "persona": [
             f"오늘 하루, 평소 스타일과 정반대의 옷을 입고 거울 속 자신과 대화하기",
@@ -141,12 +139,8 @@ def analyze_dream_engine_v2(context, symbol, dynamics):
             f"꿈 내용을 녹음기로 녹음해서 내 목소리로 다시 들어보기"
         ]
     }
-    # 해당 타입의 리스트에서 하나 랜덤 선택, 없으면 general 사용
     selected_ritual = random.choice(ritual_options.get(detected_type, ritual_options["general"]))
 
-    # 3. 3단 심층 해석 (앵무새 방지 로직)
-    # 입력값을 그대로 쓰지 않고, 분석적 문구로 감쌈
-    
     interpretations = {
         "persona": {
             "jung": f"꿈속의 '{symbol}'은(는) 당신의 사회적 인격(Persona)을 대변합니다. 당신이 기록한 정체성의 변화나 갈등은, 현재 당신이 세상에 보여주는 모습과 내면의 진실 사이에 새로운 조율이 시작되었음을 의미합니다.",
@@ -193,7 +187,6 @@ if not st.session_state.access_granted:
     이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."
 </div>""", unsafe_allow_html=True)
         
-        # 멘트 수정 완료 (Dream Pts 적용)
         st.markdown("""<div class='defi-desc-box'>
     <div class='defi-desc-text'>
         <span class='highlight-gold'>🪙 Dream Pts : 나의 퀀텀 에너지 지수</span>
@@ -326,22 +319,16 @@ with col_left:
                             st.session_state.current_dream_id = d['id']
                             st.session_state.dream_context = d.get('context', "")
                             
-                            # 1, 2단계 데이터 DB에서 로드
+                            # 데이터 로드 및 위젯 키 동기화
                             s1_loaded = d.get('symbol', "")
                             s2_loaded = d.get('block', "")
-                            
-                            # 세션 상태 업데이트 (화면 표시용)
                             st.session_state.s1_val = s1_loaded
                             st.session_state.s2_val = s2_loaded
-                            
-                            # 🟢 [핵심 수정] 위젯 키에 직접 할당하여 강제 업데이트 (1, 2단계 덮어쓰기)
                             st.session_state['s1_key'] = s1_loaded
                             st.session_state['s2_key'] = s2_loaded
                             
-                            # 4단계 의례 로드
                             st.session_state.s4_val = d.get('ritual_self', "")
                             
-                            # 3단계 해석 로드
                             loaded_analysis = d.get('analysis', "") 
                             st.session_state.s3_val = loaded_analysis 
                             st.session_state['s3_key'] = loaded_analysis 
@@ -351,7 +338,6 @@ with col_left:
                             st.session_state.interpretation_ready = True if meaning_text else False
                             st.session_state.is_minted = True if meaning_text else False
                             
-                            # 🟢 [핵심 수정] 즉시 새로고침 (One-Click Load)
                             st.rerun()
                             
                     with c_r: st.write(f"{d['created_at'][:10]} | {d.get('context', '')[:10]}...")
@@ -361,10 +347,8 @@ with col_left:
     if st.button("🔄 새로 쓰기 (Reset)"):
         for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
             st.session_state[key] = "" if key != 'current_dream_id' else None
-        # 위젯 키 초기화
         for k in ['s1_key', 's2_key', 's3_key']:
             if k in st.session_state: del st.session_state[k]
-            
         st.session_state.interpretation_ready = False
         st.session_state.is_minted = False
         st.rerun()
@@ -398,18 +382,32 @@ with col_left:
 with col_right:
     st.markdown("### 🏛️ D-Fi 연금술")
     
-    # 🟢 [수정] 위젯 키(Key) 관리 및 Tooltip(말풍선) 추가
     if 's1_key' not in st.session_state: st.session_state.s1_key = st.session_state.s1_val
     if 's2_key' not in st.session_state: st.session_state.s2_key = st.session_state.s2_val
 
-    st.text_area("🚀 Stage 1: 연상 (Association)", height=70, key="s1_key", placeholder="핵심 단어 입력 (예: 쫓김, 돈, 옷)", 
-                 help="꿈에서 가장 강렬했던 이미지나 인물을 단어로 적으세요. (예: 뱀, 학교, 돌아가신 할머니)")
+    # 🟢 [수정 완료] Stage 1 가이드 전면 교체 및 툴팁
+    s1_help_text = """먼저 꿈을 훑어 보면서 꿈 이미지 각각에 대해 연상되는 것들을 전부 적어본다.
+꿈에 사람이나 사물 상황, 색, 소리에 대화 등이 등장했을 것이다.
+
+이 하나하나를 이미지로 들여다볼 필요가 있다.
+기본 기법은 이렇다.
+우선 꿈에 처음 등장한 이미지를 적고 스스로 자문한다.
+
+'이 이미지를 보고 어떤 느낌이 들지?'
+'보고 있으면 어떤 말이나 생각이 떠오르지?'
+
+꿈에 등장하는 이미지에서 불쑥 떠오르는 단어나 생각, 심상, 감정, 기억도 연상이다.
+이 이미지와 자동적으로 연결 짓게 되는 그런 것도 연상이다."""
+
+    st.text_area("🚀 Stage 1: 연상 (Association)", height=70, key="s1_key", 
+                 placeholder="핵심 단어 입력 (예: 쫓김, 돈, 옷)", 
+                 help=s1_help_text)
     
-    st.text_area("🔍 Stage 2: 역학 (Dynamics)", height=70, key="s2_key", placeholder="어떤 기분이나 상황이었나요?",
+    st.text_area("🔍 Stage 2: 역학 (Dynamics)", height=70, key="s2_key", 
+                 placeholder="어떤 기분이나 상황이었나요?",
                  help="그 상징이 내 꿈에서 어떤 행동을 했나요? 나는 어떤 감정을 느꼈나요? (예: 무서워서 도망침, 따뜻해서 안아줌)")
     
     if st.button("▼ 마스터 해석 가동 (ENTER)"):
-        # 입력된 값 가져오기
         s1_input = st.session_state.s1_key
         s2_input = st.session_state.s2_key
         
@@ -417,7 +415,6 @@ with col_right:
             st.session_state.s1_val = s1_input
             st.session_state.s2_val = s2_input
             
-            # [CORE] 해석 엔진 가동 (이미지 생성 제거, 문맥 반영)
             result = analyze_dream_engine_v2(st.session_state.dream_context, s1_input, s2_input)
             
             analysis_text = f"""[🏛️ D-Fi 심층 분석 결과]
