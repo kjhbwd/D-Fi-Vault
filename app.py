@@ -5,15 +5,15 @@ import datetime
 import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v12.3", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v12.5", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
 
-# --- CSS: 디자인 (가독성 수정 & Deep Dark) ---
+# --- CSS: 디자인 (가독성 & Deep Dark 테마 강화) ---
 st.markdown("""
     <style>
-    /* 1. 전체 테마 강제 적용 */
+    /* 1. 전체 테마 강제 적용 (Deep Black) */
     .stApp, .stApp > header, .stApp > footer, .stApp > main {
         background-color: #050505 !important; color: #FFFFFF !important;
     }
@@ -33,16 +33,18 @@ st.markdown("""
     .stTextArea textarea, .stTextInput input {
         background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important;
     }
+    
+    /* 4. [가독성 패치] 라벨(제목) 색상 강제 지정 */
+    label, .stMarkdown label, p {
+        color: #E0E0E0 !important;
+    }
+    
+    /* 5. 컨테이너 스타일 */
     div[data-testid="column"] {
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
     }
     
-    /* 4. 가독성 패치: Expander 내부 글씨 및 일반 텍스트 강제 색상 지정 */
-    .streamlit-expanderContent p, .streamlit-expanderContent div, .stMarkdown p {
-        color: #CCCCCC !important;
-    }
-    
-    /* 5. 헤더/푸터 및 경고 숨김 */
+    /* 6. 헤더/푸터 및 경고 숨김 */
     header, footer { visibility: hidden !important; }
     .stAlert { display: none; } 
     
@@ -67,15 +69,19 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # [SESSION STATE & CONNECTION]
+# 세션 상태 초기화
 if 'access_granted' not in st.session_state: st.session_state.access_granted = False
 if 'user_id' not in st.session_state: st.session_state.user_id = None
 if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
+
+# 데이터 저장용 변수들
 for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
     if key not in st.session_state: st.session_state[key] = "" if key != 'current_dream_id' else None
 if 'interpretation_ready' not in st.session_state: st.session_state.interpretation_ready = False
 if 'is_minted' not in st.session_state: st.session_state.is_minted = False
 
+# DB 연결
 try:
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
@@ -83,9 +89,16 @@ try:
 except: st.error("DB 연결 오류")
 
 # ==========================================
-# 🧠 [CORE LOGIC] 해석 & 프롬프트 생성 엔진
+# 🧠 [CORE LOGIC] 문맥 반영 심층 해석 엔진 (v12.5)
 # ==========================================
-def analyze_dream_engine(symbol, dynamics):
+def analyze_dream_engine_v2(context, symbol, dynamics):
+    """
+    context: 전체 꿈 내용 (분위기 파악용)
+    symbol: 1단계 연상
+    dynamics: 2단계 역학
+    """
+    
+    # 1. 키워드 감지 (Archetype Detection)
     keywords = {
         "옷": "persona", "의복": "persona", "체육복": "persona", "유니폼": "persona", "가면": "persona",
         "쫓김": "shadow", "도망": "shadow", "괴물": "shadow", "귀신": "shadow", "공격": "shadow",
@@ -94,67 +107,80 @@ def analyze_dream_engine(symbol, dynamics):
         "물": "unconscious", "바다": "unconscious", "강": "unconscious", "수영": "unconscious",
         "날다": "transcendence", "하늘": "transcendence", "비행기": "transcendence", "추락": "transcendence",
         "죽음": "rebirth", "장례식": "rebirth", "시체": "rebirth", "살인": "rebirth", "불": "rebirth",
-        "똥": "wealth", "대변": "wealth"
     }
     detected_type = "general"
-    full_text = (symbol + " " + dynamics).lower()
+    full_input = (symbol + " " + dynamics + " " + context).lower()
     for key, val in keywords.items():
-        if key in full_text: detected_type = val; break
+        if key in full_input: detected_type = val; break
 
-    symbol_en_map = {
-        "옷": "mysterious cloth", "체육복": "gym uniform", "가면": "mask",
-        "쫓김": "running away from shadow", "괴물": "dark monster",
-        "돈": "pile of golden coins", "황금": "shining gold",
-        "집": "ancient house", "방": "empty room",
-        "물": "deep blue ocean", "바다": "vast sea",
-        "날다": "flying in the sky", "하늘": "cloudy sky",
-        "죽음": "rebirth phoenix", "시체": "sleeping body"
+    # 2. 실천 의례(Ritual) 랜덤 다양화 (Random Action Generator)
+    ritual_options = {
+        "persona": [
+            f"오늘 하루, 평소 스타일과 정반대의 옷을 입고 거울 속 자신과 대화하기",
+            f"옷장 정리를 하며 1년 이상 입지 않은 옷(낡은 페르소나) 한 벌 버리기",
+            f"'{symbol}'의 이미지를 종이에 그리고, 그 위에 내가 원하는 새로운 나의 모습을 덧그리기"
+        ],
+        "shadow": [
+            f"'{symbol}'에게 어울리는 귀여운 이름을 지어주고, 두려움이 들 때마다 그 이름을 불러주기",
+            f"베개 밑에 칼(모형)이나 가위를 두고 자는 상상적 방어 의례 행하기",
+            f"쫓기던 상황을 그림으로 그리고, 결말을 '내가 그 대상을 포옹하는 장면'으로 다시 그리기"
+        ],
+        "wealth": [
+            f"지갑에 있는 모든 지폐를 꺼내어 액수를 소리 내어 세어보고 감사하다고 말하기",
+            f"동전 하나를 깨끗이 닦아 '풍요의 씨앗'이라 명명하고 흙에 심거나 소중한 곳에 보관하기",
+            f"작은 금액이라도 오늘 누군가를 위해 기부하거나 베풀기"
+        ],
+        "self": [
+            f"내 방의 가구 배치나 소품 위치를 하나만 바꾸어 새로운 에너지 흐름 만들기",
+            f"방이나 집의 가장 구석진 곳(무의식의 사각지대)을 청소하기",
+            f"현관문을 닦으며 좋은 에너지가 들어오도록 환영하는 인사 건네기"
+        ],
+        "general": [
+            f"'{symbol}' 단어를 종이에 적어 오늘 하루 주머니에 넣고 다니며 그 에너지를 느끼기",
+            f"잠들기 전 물 한 잔을 마시며 '나는 꿈을 기억한다'고 세 번 암시하기",
+            f"꿈 내용을 녹음기로 녹음해서 내 목소리로 다시 들어보기"
+        ]
     }
-    symbol_en = symbol_en_map.get(symbol, f"mysterious {symbol}")
-    
-    art_styles = ["Oil painting style, dramatic lighting", "Cyberpunk style, neon lights", "Surrealism style like Dali", "Minimalist line art", "Ghibli studio style"]
-    selected_style = random.choice(art_styles)
-    image_prompt = f"/imagine prompt: A cinematic shot of {symbol_en}, representing the feeling of '{dynamics}', {selected_style}, 8k resolution, highly detailed --ar 16:9"
+    # 해당 타입의 리스트에서 하나 랜덤 선택, 없으면 general 사용
+    selected_ritual = random.choice(ritual_options.get(detected_type, ritual_options["general"]))
 
+    # 3. 3단 심층 해석 (앵무새 방지 로직)
+    # 입력값을 그대로 쓰지 않고, 분석적 문구로 감쌈
+    
     interpretations = {
         "persona": {
-            "jung": f"'{symbol}'은(는) 당신의 사회적 가면(Persona)입니다. 당신이 '{dynamics}'라고 느낀 것은, 현재 역할에 변화가 필요함을 무의식이 알리는 신호입니다.",
-            "johnson": f"우리는 종종 맞지 않는 옷을 입고 삽니다. '{dynamics}'의 느낌은 겉모습과 내면 사이의 조율이 필요함을 암시합니다.",
-            "ko": f"남들에게 보여주고 싶은 당신의 모습이 '{symbol}'입니다. '{dynamics}'의 상황은 낡은 이미지를 벗고 진실된 나를 드러내도 좋다는 메시지입니다.",
-            "ritual": f"오늘 하루, 평소에 입지 않던 스타일의 옷을 입거나 '{symbol}'과 관련된 물건 정리하기"
+            "jung": f"꿈속의 '{symbol}'은(는) 당신의 사회적 인격(Persona)을 대변합니다. 당신이 기록한 정체성의 변화나 갈등은, 현재 당신이 세상에 보여주는 모습과 내면의 진실 사이에 새로운 조율이 시작되었음을 의미합니다.",
+            "johnson": f"우리는 때로 맞지 않는 옷을 입고 살아갑니다. 이 꿈은 당신에게 묻습니다. '지금 입고 있는 역할이 편안한가?' 낡은 역할을 벗어던질 용기가 필요한 시점입니다.",
+            "ko": f"이것은 타인의 시선이 만들어낸 '나'입니다. 하지만 꿈은 이제 당신이 그 껍질을 깨고 나와도 안전하다고 말합니다. 당신의 본래 모습을 드러내십시오."
         },
         "shadow": {
-            "jung": f"'{symbol}'은(는) 당신의 그림자(Shadow)입니다. 당신이 '{dynamics}'의 반응을 보인 것은, 억눌린 에너지가 통합을 요구하는 것입니다.",
-            "johnson": f"도망치지 마십시오. '{dynamics}'의 상황은 공포가 아닌 초대입니다. 이 에너지는 당신의 힘이 되길 원합니다.",
-            "ko": f"추격자는 곧 '당신 자신'입니다. '{dynamics}'하며 거부했던 그 힘을 받아들일 때 당신은 온전해집니다.",
-            "ritual": f"'{symbol}'에게 이름을 붙여주고, '너는 나의 힘이다'라고 세 번 말하기"
+            "jung": f"등장한 '{symbol}'은(는) 당신의 그림자(Shadow)입니다. 이것은 외부의 적이 아니라, 당신이 아직 인정하지 않은 당신 자신의 일부입니다. 그 강렬한 에너지는 통합을 기다리고 있습니다.",
+            "johnson": f"도망치거나 싸우려 하지 마십시오. 꿈속의 추격이나 공포는 '나를 봐달라'는 무의식의 절규입니다. 그 에너지를 존중할 때 그것은 당신의 가장 큰 아군이 됩니다.",
+            "ko": f"모든 등장인물은 당신의 분신입니다. '{symbol}'이 되어보십시오. 그리고 그가 왜 그렇게 화가 났거나 쫓아오는지 들어보십시오. 그곳에 답이 있습니다."
         },
         "wealth": {
-            "jung": f"'{symbol}'은(는) 내면의 '자기(Self)'가 가진 고귀한 가치입니다. '{dynamics}'의 상황은 영적 풍요가 현실화될 준비가 되었음을 뜻합니다.",
-            "johnson": f"죄책감 없이 풍요를 받으십시오. '{dynamics}'의 흐름은 창조적 에너지가 밖으로 흘러나와야 함을 보여줍니다.",
-            "ko": f"당신은 이미 충분합니다. 무의식은 당신의 잠재력이 '{dynamics}'의 방식으로 세상에 기여할 수 있음을 암시합니다.",
-            "ritual": f"지갑이나 통장을 쥐고 '나는 이 풍요를 감당할 그릇이다'라고 선언하기"
+            "jung": f"'{symbol}'은(는) 세속적 재물이 아니라, 당신 영혼의 고귀한 가치(Self)를 상징합니다. 무의식은 당신이 이미 내적으로 충만한 상태임을 보여주고 있습니다.",
+            "johnson": f"이 풍요로움을 의심하지 말고 받아들이십시오. 내면의 에너지가 임계점을 넘어 현실의 창조적 결과물로 흘러나오려 하고 있습니다.",
+            "ko": f"당신은 결핍되지 않았습니다. 이 꿈은 당신의 잠재력이 현실에서 구체적인 성과로 드러날 준비가 되었음을 확증하는 보증수표입니다."
         },
         "self": {
-            "jung": f"'{symbol}'은(는) 당신의 인격 구조입니다. '{dynamics}'라고 묘사한 것은 의식이 새로운 영역으로 확장되고 있음을 뜻합니다.",
-            "johnson": f"내면 공간을 정비하십시오. '{dynamics}'의 느낌을 살피고, 새로운 에너지가 들어올 공간을 마련하십시오.",
-            "ko": f"이 공간은 당신의 마음입니다. '{symbol}'에서 느낀 '{dynamics}'의 감정을 현실의 내 방에 적용해보세요.",
-            "ritual": f"내 방의 물건 중 하나를 버리거나 위치를 바꾸어 '{dynamics}'의 에너지 만들기"
+            "jung": f"'{symbol}'은(는) 당신의 마음의 구조 그 자체입니다. 꿈속 공간의 상태는 현재 당신 의식의 상태를 반영합니다. 확장이 일어나고 있거나, 재건축이 필요한 시점입니다.",
+            "johnson": f"내면의 공간을 점검하십시오. 어수선했다면 정리가 필요하고, 새로운 방을 보았다면 당신의 새로운 재능이 발견된 것입니다.",
+            "ko": f"꿈속의 그 장소에서 느꼈던 감정을 기억하십시오. 그 공간은 당신이 쉬어야 할 곳이거나, 용기 내어 들어가야 할 마음의 방입니다."
         },
         "general": {
-            "jung": f"'{symbol}'은(는) 무의식이 보낸 암호입니다. 특히 '{dynamics}'라고 느낀 부분에 당신 성장의 열쇠가 있습니다.",
-            "johnson": f"분석하려 하지 말고 '{dynamics}'의 에너지 자체를 느끼십시오. '{symbol}'은(는) 삶을 바꿀 촉매제입니다.",
-            "ko": f"꿈속의 모든 것은 당신입니다. 당신이 '{symbol}'이(가) 되어 '{dynamics}'의 상황을 겪는다고 상상해보세요.",
-            "ritual": f"'{symbol}'의 이미지를 그리거나 단어를 적어 주머니에 넣고 다니기"
+            "jung": f"'{symbol}' 상징은 당신 무의식이 보낸 특별한 초대장입니다. 전체적인 꿈의 맥락을 볼 때, 이것은 당신이 현재 겪고 있는 상황에 대한 직관적인 해결책을 담고 있습니다.",
+            "johnson": f"이 꿈을 머리로 해석하려 하기보다, 그 이미지 자체를 마음에 품으십시오. '{dynamics}'의 에너지가 당신의 삶을 올바른 방향으로 이끌 것입니다.",
+            "ko": f"이 꿈은 온전히 당신의 이야기입니다. 꿈속의 상황을 현실의 비유로 바라보십시오. 당신은 지금 어디에 서 있습니까?"
         }
     }
     
     result = interpretations.get(detected_type, interpretations["general"])
-    result['prompt'] = image_prompt 
+    result['ritual'] = selected_ritual
     return result
 
 # ==========================================
-# 🚪 1차 관문: Manifesto (멘트 수정 완료)
+# 🚪 1차 관문: Manifesto
 # ==========================================
 if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
@@ -167,7 +193,7 @@ if not st.session_state.access_granted:
     이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."
 </div>""", unsafe_allow_html=True)
         
-        # 🟢 [수정됨] 1. 성장의 시각화 부분 멘트 변경 (포인트 -> Dream Pts)
+        # 멘트 수정 완료 (Dream Pts 적용)
         st.markdown("""<div class='defi-desc-box'>
     <div class='defi-desc-text'>
         <span class='highlight-gold'>🪙 Dream Pts : 나의 퀀텀 에너지 지수</span>
@@ -299,19 +325,35 @@ with col_left:
                         if st.button("로드", key=f"L_{d['id']}"):
                             st.session_state.current_dream_id = d['id']
                             st.session_state.dream_context = d.get('context', "")
-                            st.session_state.s1_val = d.get('symbol', "")
-                            st.session_state.s2_val = d.get('block', "")
-                            st.session_state.s4_val = d.get('ritual_self', "")
-                            meaning_text = d.get('meaning', "")
                             
+                            # 1, 2단계 데이터 DB에서 로드
+                            s1_loaded = d.get('symbol', "")
+                            s2_loaded = d.get('block', "")
+                            
+                            # 세션 상태 업데이트 (화면 표시용)
+                            st.session_state.s1_val = s1_loaded
+                            st.session_state.s2_val = s2_loaded
+                            
+                            # 🟢 [핵심 수정] 위젯 키에 직접 할당하여 강제 업데이트 (1, 2단계 덮어쓰기)
+                            st.session_state['s1_key'] = s1_loaded
+                            st.session_state['s2_key'] = s2_loaded
+                            
+                            # 4단계 의례 로드
+                            st.session_state.s4_val = d.get('ritual_self', "")
+                            
+                            # 3단계 해석 로드
                             loaded_analysis = d.get('analysis', "") 
                             st.session_state.s3_val = loaded_analysis 
                             st.session_state['s3_key'] = loaded_analysis 
 
+                            meaning_text = d.get('meaning', "")
                             st.session_state.existing_value = meaning_text if meaning_text else "미발행"
                             st.session_state.interpretation_ready = True if meaning_text else False
                             st.session_state.is_minted = True if meaning_text else False
+                            
+                            # 🟢 [핵심 수정] 즉시 새로고침 (One-Click Load)
                             st.rerun()
+                            
                     with c_r: st.write(f"{d['created_at'][:10]} | {d.get('context', '')[:10]}...")
             else: st.info("기록 없음")
         except: pass
@@ -319,7 +361,10 @@ with col_left:
     if st.button("🔄 새로 쓰기 (Reset)"):
         for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
             st.session_state[key] = "" if key != 'current_dream_id' else None
-        if 's3_key' in st.session_state: del st.session_state.s3_key 
+        # 위젯 키 초기화
+        for k in ['s1_key', 's2_key', 's3_key']:
+            if k in st.session_state: del st.session_state[k]
+            
         st.session_state.interpretation_ready = False
         st.session_state.is_minted = False
         st.rerun()
@@ -327,7 +372,7 @@ with col_left:
     with st.form("left_form"):
         status = "📝 수정 모드" if st.session_state.current_dream_id else "✨ 신규 작성 모드"
         st.caption(status)
-        dream_raw = st.text_area("꿈 내용 입력", value=st.session_state.dream_context, height=450)
+        dream_raw = st.text_area("꿈 내용 입력", value=st.session_state.dream_context, height=450, help="여기에 기억나는 꿈 내용을 최대한 자세히 적으세요.")
         c1, c2 = st.columns(2)
         with c1:
             if st.form_submit_button("💾 내 금고에 저장"):
@@ -353,17 +398,27 @@ with col_left:
 with col_right:
     st.markdown("### 🏛️ D-Fi 연금술")
     
-    st.text_area("🚀 Stage 1: 연상 (Association)", value=st.session_state.s1_val, height=70, key="s1_key", placeholder="핵심 단어 입력 (예: 쫓김, 돈, 옷, 바다)")
-    st.text_area("🔍 Stage 2: 역학 (Dynamics)", value=st.session_state.s2_val, height=70, key="s2_key", placeholder="어떤 기분이나 상황이었나요?")
+    # 🟢 [수정] 위젯 키(Key) 관리 및 Tooltip(말풍선) 추가
+    if 's1_key' not in st.session_state: st.session_state.s1_key = st.session_state.s1_val
+    if 's2_key' not in st.session_state: st.session_state.s2_key = st.session_state.s2_val
+
+    st.text_area("🚀 Stage 1: 연상 (Association)", height=70, key="s1_key", placeholder="핵심 단어 입력 (예: 쫓김, 돈, 옷)", 
+                 help="꿈에서 가장 강렬했던 이미지나 인물을 단어로 적으세요. (예: 뱀, 학교, 돌아가신 할머니)")
+    
+    st.text_area("🔍 Stage 2: 역학 (Dynamics)", height=70, key="s2_key", placeholder="어떤 기분이나 상황이었나요?",
+                 help="그 상징이 내 꿈에서 어떤 행동을 했나요? 나는 어떤 감정을 느꼈나요? (예: 무서워서 도망침, 따뜻해서 안아줌)")
     
     if st.button("▼ 마스터 해석 가동 (ENTER)"):
+        # 입력된 값 가져오기
         s1_input = st.session_state.s1_key
         s2_input = st.session_state.s2_key
+        
         if s1_input: 
             st.session_state.s1_val = s1_input
             st.session_state.s2_val = s2_input
             
-            result = analyze_dream_engine(s1_input, s2_input)
+            # [CORE] 해석 엔진 가동 (이미지 생성 제거, 문맥 반영)
+            result = analyze_dream_engine_v2(st.session_state.dream_context, s1_input, s2_input)
             
             analysis_text = f"""[🏛️ D-Fi 심층 분석 결과]
 
@@ -375,28 +430,22 @@ with col_right:
 
 3. 🕯️ 고혜경 박사 (Projective Work):
 "{result['ko']}"
-
---------------------------------------------------
-🎨 [보너스] AI 화가에게 줄 주문서 (Image Prompt):
-(아래 영어를 복사해서 AI 그림 도구에 넣어보세요)
-
-`{result['prompt']}`
---------------------------------------------------
 """
             st.session_state['s3_key'] = analysis_text 
             st.session_state.s3_val = analysis_text
             st.session_state.s4_val = result['ritual']
             st.session_state.interpretation_ready = True
-            st.toast("✨ 분석 완료! 해석이 로딩되었습니다.")
+            st.toast("✨ 심층 분석 완료!")
             time.sleep(0.1) 
             st.rerun()
         else: st.warning("Stage 1(상징)을 입력해야 해석할 수 있습니다.")
 
     if 's3_key' not in st.session_state: st.session_state.s3_key = st.session_state.s3_val
-    st.text_area("🏛️ Stage 3: 해석 (Interpretation)", height=350, disabled=False, key="s3_key")
+    st.text_area("🏛️ Stage 3: 해석 (Interpretation)", height=350, disabled=False, key="s3_key",
+                 help="3인의 전문가 관점으로 분석된 무의식의 메시지입니다.")
 
     with st.form("mint_form"):
-        st.markdown("#### 💎 Stage 4: 의례 (Ritual)")
+        st.markdown("#### 💎 Stage 4: 의례 (Ritual)", help="꿈의 에너지를 현실로 가져오는 구체적인 행동입니다. 이 행동을 함으로써 무의식은 변화를 시작합니다.")
         if st.session_state.is_minted and st.session_state.existing_value: st.info(f"📉 지난 자산 가치: {st.session_state.existing_value}")
         
         s4 = st.text_input("구체적 실천 행동 (자동 추천됨, 수정 가능)", value=st.session_state.s4_val)
@@ -405,7 +454,7 @@ with col_right:
         if st.form_submit_button(final_btn):
             if st.session_state.s1_val and s4:
                 token_val = min(5000, 1000 + len(st.session_state.s1_val + s4)*10)
-                new_val_str = f"Value: {token_val} Tokens"
+                new_val_str = f"Value: {token_val} Dream Pts"
                 
                 payload = {
                     "symbol": st.session_state.s1_val, 
