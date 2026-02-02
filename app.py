@@ -6,7 +6,7 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v13.14", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="D-Fi Vault v13.15", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -538,6 +538,15 @@ if st.session_state.user_id == ADMIN_USER:
                 st.toast(T['burn_success'])
                 time.sleep(2)
                 st.rerun()
+        
+        # 🚑 긴급 복구 버튼 (추가됨)
+        st.markdown("---")
+        st.write("### 🚑 긴급 복구 (Emergency Restore)")
+        if st.button("↩️ 소각 취소 및 자산 복구 (Unburn)"):
+            supabase.table("dreams").update({"is_burned": False}).eq("user_id", st.session_state.user_id).execute()
+            st.success("✅ 자산이 성공적으로 복구되었습니다! (Recovered)")
+            time.sleep(2)
+            st.rerun()
                 
         if st.button("🔒 Lock Admin"):
             st.session_state.is_admin_unlocked = False
