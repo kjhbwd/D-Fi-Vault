@@ -5,7 +5,7 @@ import datetime
 import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v12.2", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v12.3", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
@@ -101,7 +101,6 @@ def analyze_dream_engine(symbol, dynamics):
     for key, val in keywords.items():
         if key in full_text: detected_type = val; break
 
-    # AI 화가 프롬프트 생성 (영어 변환 시뮬레이션)
     symbol_en_map = {
         "옷": "mysterious cloth", "체육복": "gym uniform", "가면": "mask",
         "쫓김": "running away from shadow", "괴물": "dark monster",
@@ -155,7 +154,7 @@ def analyze_dream_engine(symbol, dynamics):
     return result
 
 # ==========================================
-# 🚪 1차 관문: Manifesto
+# 🚪 1차 관문: Manifesto (멘트 수정 완료)
 # ==========================================
 if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
@@ -168,11 +167,12 @@ if not st.session_state.access_granted:
     이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."
 </div>""", unsafe_allow_html=True)
         
+        # 🟢 [수정됨] 1. 성장의 시각화 부분 멘트 변경 (포인트 -> Dream Pts)
         st.markdown("""<div class='defi-desc-box'>
     <div class='defi-desc-text'>
         <span class='highlight-gold'>🪙 Dream Pts : 나의 퀀텀 에너지 지수</span>
         <p><span class='highlight-bold'>1. 성장의 시각화 (Visualizing Growth)</span><br>
-        저는 생존을 고민하는 평범한 사람입니다. 하지만 매일 밤 <b>꿈(무의식)</b>을 채굴하여 제 잠재력을 깨우고 있습니다. 여기에 쌓이는 포인트는 제가 얼마나 깊이 각성했는지를 보여주는 <b>성장의 증명</b>입니다.</p>
+        저는 생존을 고민하는 평범한 사람입니다. 하지만 매일 밤 <b>꿈(무의식)</b>을 채굴하여 제 잠재력을 깨우고 있습니다. 여기에 쌓이는 <b>Dream Pts</b>는 제가 얼마나 깊이 각성했는지를 보여주는 <b>성장의 증명</b>입니다.</p>
         <p><span class='highlight-bold'>2. 현실의 변화 (X-Factor)</span><br>
         이곳에서 제련된 통찰은 <b>X(트위터)</b>와 현실의 콘텐츠가 됩니다. 무의식의 영감이 어떻게 <b>노출수(Traffic)</b>와 <b>수익(Revenue)</b>으로 변환되는지 목격하십시오.</p>
         <div class='faint-hint'>
@@ -304,10 +304,9 @@ with col_left:
                             st.session_state.s4_val = d.get('ritual_self', "")
                             meaning_text = d.get('meaning', "")
                             
-                            # 🟢 [수정] 해석(analysis) 불러오기
                             loaded_analysis = d.get('analysis', "") 
                             st.session_state.s3_val = loaded_analysis 
-                            st.session_state['s3_key'] = loaded_analysis # 화면 강제 업데이트
+                            st.session_state['s3_key'] = loaded_analysis 
 
                             st.session_state.existing_value = meaning_text if meaning_text else "미발행"
                             st.session_state.interpretation_ready = True if meaning_text else False
@@ -364,7 +363,6 @@ with col_right:
             st.session_state.s1_val = s1_input
             st.session_state.s2_val = s2_input
             
-            # [CORE] 해석 및 프롬프트 생성
             result = analyze_dream_engine(s1_input, s2_input)
             
             analysis_text = f"""[🏛️ D-Fi 심층 분석 결과]
@@ -409,13 +407,12 @@ with col_right:
                 token_val = min(5000, 1000 + len(st.session_state.s1_val + s4)*10)
                 new_val_str = f"Value: {token_val} Tokens"
                 
-                # 🟢 [수정] analysis(해석) 저장 기능 추가
                 payload = {
                     "symbol": st.session_state.s1_val, 
                     "block": st.session_state.s2_val, 
                     "ritual_self": s4, 
                     "meaning": new_val_str,
-                    "analysis": st.session_state.s3_val # 해석 내용 저장
+                    "analysis": st.session_state.s3_val
                 }
                 
                 if st.session_state.current_dream_id:
