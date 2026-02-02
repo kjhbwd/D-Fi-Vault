@@ -6,7 +6,7 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v15.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v17.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -23,11 +23,81 @@ HALVING_STEP = 2100000
 if 'language' not in st.session_state: st.session_state.language = "KO"
 
 # ==========================================
-# 🌐 [LANGUAGE PACK] - 로버트 존슨 실례 가이드 통합
+# 📚 [CONTENT PACK] - 요청하신 전체 텍스트 (100% 반영)
 # ==========================================
+
+# 1단계 가이드 텍스트
+GUIDE_S1_FULL = """
+**[실례 상황 설정]**
+꿈 내용: "나는 낡고 허름한 내 옛날 초등학교 교실에 앉아 있다. 칠판 앞에 검은 옷을 입은 낯선 남자가 서 있는데, 나에게 오래된 시계를 건네주며 '이걸 고치라'고 말한다. 나는 고칠 줄 몰라 당황한다."
+
+**1. 연상 (Associations): 개인적 의미의 방사형 연결**
+꿈의 이미지를 사전적 정의(보편적 상징)로 해석하지 마십시오. 존슨은 '방사형 연상(Starburst)'을 강조합니다. 꼬리에 꼬리를 무는 연상(A→B→C)이 아니라, 이미지(A)를 중심에 두고 떠오르는 직관(A→1, A→2, A→3)을 포착해야 합니다.
+
+**[적용법]**
+꿈에 나온 주요 명사, 인물, 기분을 적고 직관적인 느낌을 나열합니다.
+
+**[실례 적용]**
+* **초등학교 교실:** → 배움, 미성숙함, 규율, 답답함, 과거의 순수함.
+* **검은 옷의 남자:** → 권위적임, 무서움, 아버지 같은 느낌, 엄격한 선생님, 그림자(Shadow).
+* **오래된 시계:** → 시간의 압박, 할아버지, 정밀함, 멈춰 있음, 수명이 다함.
+* **당황함(감정):** → 무능력함, 준비되지 않음, 압도당함.
+"""
+
+# 2단계 가이드 텍스트
+GUIDE_S2_FULL = """
+**2. 역학 (Dynamics): 내면의 인격들과 연결하기**
+꿈의 모든 등장인물과 사물은 '나 자신의 분열된 자아'입니다. 역학 단계는 연상된 이미지들이 내면에서 어떤 '부분'을 담당하고 있는지 식별하는 과정입니다.
+
+**[적용법]**
+연상된 키워드를 내 내면의 심리적 상황에 대입합니다. "내 안의 어떤 부분이 이 이미지와 닮았는가?"를 자문합니다.
+
+**[실례 적용]**
+* **초등학교 교실** → **나의 현재 학습 태도:** 나는 새로운 프로젝트 앞에서 미성숙한 태도를 보이고 있거나, 과거의 방식(낡은 교실)에 갇혀 있다.
+* **검은 옷의 남자** → **내면의 엄격한 감독관:** 이것은 나의 '초자아(Superego)'이거나 나를 압박하는 콤플렉스다. 그는 나에게 성과를 요구하고 있다.
+* **고장 난 시계** → **나의 생체 리듬 혹은 타이밍:** 내가 인생의 타이밍을 놓치고 있다는 강박, 혹은 나의 에너지가 고갈되어 멈췄음을 의미한다.
+"""
+
+# 3단계 가이드 텍스트
+GUIDE_S3_FULL = """
+**3. 해석 (Interpretations): 메시지의 통합**
+연상과 역학을 종합하여 꿈이 보내는 '보상적(Compensatory) 메시지'를 읽어냅니다. 꿈은 의식이 한쪽으로 치우쳤을 때 균형을 맞추려 합니다.
+
+**[적용법]**
+두 가지 질문을 던집니다. "꿈은 나의 어떤 치우친 태도를 경고하는가?" 또는 "꿈은 내가 잊고 있는 어떤 잠재력을 일깨우는가?"
+
+**[실례 적용]**
+* **분석:** 나는 현재 현실에서 새로운 도전(프로젝트 등) 앞에 서 있지만, 자신감이 없고(당황함) 과거의 낡은 방식(초등학교)으로 문제를 해결하려 한다. 내면의 권위자(검은 남자)는 나에게 '시간 관리'나 '내면의 질서'(시계)를 회복하라고 명령하고 있다.
+* **결론:** 나는 지금 무언가를 급하게 추진할 것이 아니라, 멈춰버린 나의 내면 리듬(시계)을 먼저 수리해야 한다. 과거의 낡은 학습 방식에서 벗어나 전문가적인 태도를 갖춰야 한다는 신호다.
+"""
+
+# 4단계 가이드 텍스트 (체크리스트 포함)
+GUIDE_S4_FULL = """
+**4. 의례 (Rituals): 구체적 행동으로의 육화 (가장 중요)**
+빌더님, 이 단계가 로버트 존슨 꿈 작업의 핵심입니다. 깨달음(Insight)만으로는 부족합니다. 반드시 물리적인 행동(Action)이 따라야 무의식이 변화를 인지합니다. 거창할 필요는 없으나, 상징적 의미가 명확해야 합니다.
+
+**[적용법]**
+해석된 내용을 바탕으로 작지만 구체적인, 그리고 신성한(집중된) 행동을 수행합니다.
+
+**[실례 적용: 경제적/심리적 안정을 위한 실질적 지침]**
+* **나쁜 예:** "앞으로 시간을 잘 쓰자라고 다짐한다." (추상적임, 효과 없음)
+* **좋은 예 (의례):**
+    1.  실제로 집에 있는 멈춘 시계가 있다면 배터리를 교체하거나 수리점에 맡긴다. (물리적 행위)
+    2.  만약 시계가 없다면, 종이에 원을 그리고 하루의 시간을 어떻게 배분할지 구체적인 계획표를 짠 뒤, 그 종이를 정성스럽게 접어 지갑에 넣는다. (상징적 행위)
+    3.  서점에 가서 새로운 전문 서적을 한 권 사서 첫 챕터를 읽는다. (초등학교 교실, 즉 미성숙함에서 벗어나는 행위)
+
+---
+**[Builder's Check: 사각지대 지적]**
+이 과정에서 빌더님이 가장 경계해야 할 것은 **'해석의 인플레이션(Inflation)'**입니다.
+
+* **지적 유희 금지:** 꿈 해석이 그저 "아, 내 무의식이 이렇구나, 신기하다"에서 끝나면 그것은 자아의 비대만 불러옵니다. 의례(Ritual)가 빠진 꿈 작업은 영혼의 에너지를 소모시킬 뿐, 현실을 바꾸지 못합니다.
+* **부정적 인물 수용:** 꿈속의 '검은 옷의 남자'를 적으로 간주하지 마십시오. 그는 억압된 지혜를 가진 조력자일 가능성이 높습니다. 두려운 대상에게 말을 걸거나 대접하는 상상을 하는 것(적극적 상상)이 필요할 수 있습니다.
+* **작은 의례의 힘:** 거창한 변화를 시도하다 실패하지 마시고, '10분 산책', '물 한 잔을 마시며 다짐하기'와 같이 통제 가능한 범위의 의례부터 시작하십시오.
+"""
+
 LANG = {
     "KO": {
-        "title": "D-Fi : 무의식의 연금술",
+        "title": "Dream-Fi : 무의식의 연금술",
         "manifesto_quote": '"현실의 결핍은 무의식의 풍요로 채워진다.<br>이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."',
         "tokenomics": "🪙 Tokenomics : 비트코인 모델 적용",
         "token_desc": "• 총 발행 한도: 21,000,000 Dream Pts<br>• 반감기(Halving): 매 2,100,000 Pts 채굴 시 보상 50% 감소",
@@ -60,46 +130,25 @@ LANG = {
         "status_new": "✨ 신규 작성 모드",
         "save_btn": "💾 임시 저장 (Save Draft)",
         "delete_btn": "🗑️ 삭제 (Delete)",
-        "right_title": "🏛️ D-Fi 연금술 (4-Step Process)",
+        "right_title": "🏛️ Dream-Fi 연금술 (4-Step)",
         
-        # --- [NEW] 4단계 실례 가이드 (KO) ---
+        # 가이드 텍스트 (Expander용)
+        "guide_s1": GUIDE_S1_FULL,
+        "guide_s2": GUIDE_S2_FULL,
+        "guide_s3": GUIDE_S3_FULL,
+        "guide_s4": GUIDE_S4_FULL,
+        
         "s1_label": "🚀 Stage 1: 연상 (Association)",
-        "s1_help": """[가이드: 개인적 의미의 방사형 연결]
-이미지(A)를 중심에 두고 떠오르는 직관을 포착하세요.
-(실례)
-- 초등학교 교실: 배움, 미성숙함, 규율, 답답함.
-- 검은 옷의 남자: 권위적임, 무서움, 그림자(Shadow).
-- 오래된 시계: 시간의 압박, 멈춰 있음, 수명이 다함.""",
-        
         "s2_label": "🔍 Stage 2: 역학 (Dynamics)",
-        "s2_help": """[가이드: 내면의 인격들과 연결하기]
-"내 안의 어떤 부분이 이 이미지와 닮았는가?"를 자문하세요.
-(실례)
-- 초등학교 교실 → 나의 학습 태도: 과거의 방식에 갇혀 있음.
-- 검은 옷의 남자 → 내면의 감독관: 나를 압박하는 초자아.
-- 고장 난 시계 → 나의 생체 리듬: 에너지가 고갈되어 멈춤.""",
-        
         "s3_label": "🏛️ Stage 3: 해석 (Interpretation)",
-        "s3_help": """[가이드: 메시지의 통합]
-꿈이 보내는 보상적(Compensatory) 메시지를 읽어냅니다.
-(실례)
-- 분석: 과거의 낡은 방식으로 문제를 해결하려 함. 내면의 권위자는 '내면의 질서' 회복을 명령함.
-- 결론: 멈춰버린 리듬을 수리하고 전문가적 태도를 갖춰야 한다는 신호.""",
-        
         "s4_label": "💎 Stage 4: 의례 (Ritual)",
-        "s4_help": """[가이드: 구체적 행동으로의 육화]
-깨달음을 물리적 행동으로 옮기세요. 상징적 의미가 명확해야 합니다.
-(좋은 예)
-- 실제로 멈춘 시계의 배터리를 교체함.
-- 시간 계획표를 짜서 지갑에 넣음.
-- 전문 서적을 한 권 사서 읽음.""",
         
         "mint_btn": "💎 최종 자산 발행 (Mint Token)",
         "update_btn": "🏛️ 자산 정보 업데이트",
         "success_msg": "🎉 채굴 성공! (Minted)",
         "mined_value": "채굴된 가치",
         "bonus_msg": "현재 반감기 보너스",
-        "ledger_title": "📊 D-Fi 투명 장부 (Ledger)",
+        "ledger_title": "📊 Dream-Fi 투명 장부 (Ledger)",
         "ledger_desc": "모든 유저의 활성 자산 현황입니다. (소각된 자산 제외)",
         "burn_title": "🔥 자산 소각 (Buy-back)",
         "burn_desc": "보유한 자산을 현금화(바이백)하고 소각합니다.",
@@ -110,86 +159,66 @@ LANG = {
         "reg_dreamers": "Registered Dreamers"
     },
     "EN": {
-        "title": "D-Fi : Alchemy of the Unconscious",
-        "manifesto_quote": '"The lack in reality is filled by the abundance of the unconscious.<br>This is a <b>Quantum Jump Laboratory</b> where an individual changes their destiny."',
+        "title": "Dream-Fi : Alchemy of the Unconscious",
+        "manifesto_quote": '"The lack in reality is filled by the abundance of the unconscious."',
         "tokenomics": "🪙 Tokenomics : Bitcoin Model",
-        "token_desc": "• Max Supply: 21,000,000 Dream Pts<br>• Halving: Reward -50% every 2,100,000 Pts mined",
-        "desc_1_title": "1. Visualizing Growth",
-        "desc_1_text": "I mine my <b>Dreams (Unconscious)</b> to awaken my potential. The accumulated <b>Dream Pts</b> are the <b>Proof of Growth</b>.",
-        "desc_2_title": "2. X-Factor (Reality Change)",
-        "desc_2_text": "Insights refined here become content for <b>X (Twitter)</b>. Inspiration transforms into <b>Traffic</b> and <b>Revenue</b>.",
+        "token_desc": "Max Supply: 21M / Halving every 2.1M",
+        "desc_1_title": "Visualizing Growth",
+        "desc_1_text": "Mining dreams to awaken potential.",
+        "desc_2_title": "Reality Change",
+        "desc_2_text": "Turning insights into reality.",
         "login_placeholder": "Enter Access Code (2026)",
-        "login_btn": "🗝️ Enter the Mine",
-        "login_error": "⛔ Invalid Code (2026)",
+        "login_btn": "🗝️ Enter",
+        "login_error": "⛔ Invalid Code",
         "id_check_title": "👤 Identity Check",
-        "id_check_desc": "Enter your unique Nickname (ID) to open the vault.",
-        "next_btn": "🚀 Next",
-        "welcome": "👋 Welcome",
-        "open_vault": "🔓 Open Vault",
-        "hint_btn": "❓ Hint",
-        "register_msg": "✨ First time here! Creating your vault.",
-        "register_btn": "📝 Register & Enter",
-        "pin_placeholder": "Password (4-digit PIN)",
-        "hint_placeholder": "Password Hint (Optional)",
+        "id_check_desc": "Enter Nickname.",
+        "next_btn": "Next",
+        "welcome": "Welcome",
+        "open_vault": "Open Vault",
+        "hint_btn": "Hint",
+        "register_msg": "Creating vault.",
+        "register_btn": "Register",
+        "pin_placeholder": "PIN (4-digit)",
+        "hint_placeholder": "Hint",
         "dash_global": "Global Mined",
-        "dash_difficulty": "Mining Difficulty",
-        "dash_my_asset": "My Active Assets",
-        "logout": "🔒 Logout",
+        "dash_difficulty": "Difficulty",
+        "dash_my_asset": "My Assets",
+        "logout": "Logout",
         "left_title": "📓 Raw Material",
-        "load_dreams": "📂 Load Past Dreams",
+        "load_dreams": "Load Dreams",
         "load_btn": "Load",
-        "reset_btn": "🔄 Reset",
-        "status_edit": "📝 Edit Mode",
-        "status_new": "✨ New Entry Mode",
-        "save_btn": "💾 Save Draft",
-        "delete_btn": "🗑️ Delete",
-        "right_title": "🏛️ D-Fi Alchemy",
+        "reset_btn": "Reset",
+        "status_edit": "Edit Mode",
+        "status_new": "New Entry",
+        "save_btn": "Save Draft",
+        "delete_btn": "Delete",
+        "right_title": "🏛️ Dream-Fi Alchemy",
         
-        # --- [NEW] 4-Step Guide (EN) ---
-        "s1_label": "🚀 Stage 1: Association",
-        "s1_help": """[Guide: Radial Association]
-Focus on the image(A) and capture intuitive feelings.
-(Example)
-- School: Learning, Immaturity, Discipline.
-- Man in Black: Authority, Fear, Shadow.
-- Old Clock: Pressure of time, Stopped.""",
+        # EN Placeholder (Korean full text requested as main)
+        "guide_s1": "Please refer to the Korean guide for the full context of Robert Johnson's method.",
+        "guide_s2": "Please refer to the Korean guide for the full context.",
+        "guide_s3": "Please refer to the Korean guide for the full context.",
+        "guide_s4": "Please refer to the Korean guide for the full context.",
         
-        "s2_label": "🔍 Stage 2: Dynamics",
-        "s2_help": """[Guide: Inner Personas]
-"Which part of me resembles this image?"
-(Example)
-- School → My learning attitude: Stuck in old ways.
-- Man in Black → Inner supervisor: Superego.
-- Broken Clock → My bio-rhythm: Energy depleted.""",
+        "s1_label": "Stage 1: Association",
+        "s2_label": "Stage 2: Dynamics",
+        "s3_label": "Stage 3: Interpretation",
+        "s4_label": "Stage 4: Ritual",
         
-        "s3_label": "🏛️ Stage 3: Interpretation",
-        "s3_help": """[Guide: Message Integration]
-Read the compensatory message.
-(Example)
-- Analysis: Trying to solve problems with old ways.
-- Conclusion: Signal to repair the stopped rhythm and adopt a professional attitude.""",
-        
-        "s4_label": "💎 Stage 4: Ritual",
-        "s4_help": """[Guide: Physical Incarnation]
-Move insight into physical action.
-(Example)
-- Replacing the battery of a stopped clock.
-- Writing a schedule and putting it in your wallet.""",
-        
-        "mint_btn": "💎 Mint Token",
-        "update_btn": "🏛️ Update Asset",
-        "success_msg": "🎉 Minting Successful!",
+        "mint_btn": "Mint Token",
+        "update_btn": "Update Asset",
+        "success_msg": "Minting Successful!",
         "mined_value": "Mined Value",
-        "bonus_msg": "Current Halving Bonus",
-        "ledger_title": "📊 D-Fi Public Ledger",
-        "ledger_desc": "Active assets of all users.",
-        "burn_title": "🔥 Asset Burn (Buy-back)",
-        "burn_desc": "Cash out (Buy-back) and burn your assets.",
-        "burn_btn": "💸 Cash Out & Burn",
-        "burn_success": "✅ Burn Complete! Points reset to 0.",
-        "admin_unlock": "🔒 Admin Unlock",
-        "master_key_ph": "Enter Master Key",
-        "reg_dreamers": "Registered Dreamers"
+        "bonus_msg": "Halving Bonus",
+        "ledger_title": "Public Ledger",
+        "ledger_desc": "Active assets.",
+        "burn_title": "Asset Burn",
+        "burn_desc": "Burn your assets.",
+        "burn_btn": "Burn",
+        "burn_success": "Burn Complete.",
+        "admin_unlock": "Admin Unlock",
+        "master_key_ph": "Master Key",
+        "reg_dreamers": "Dreamers"
     }
 }
 
@@ -204,8 +233,10 @@ st.markdown("""
     [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
     
-    .streamlit-expanderHeader p { color: #FFFFFF !important; font-weight: bold !important; font-size: 1.1em !important; }
-    .streamlit-expanderHeader:hover p { color: #D4AF37 !important; } 
+    /* Expander 스타일 (말풍선 역할) */
+    .streamlit-expanderHeader { background-color: #1A1A1A !important; border-radius: 5px !important; border: 1px solid #333 !important; }
+    .streamlit-expanderHeader p { color: #D4AF37 !important; font-weight: bold !important; font-size: 1.0em !important; }
+    .streamlit-expanderContent { background-color: #111111 !important; color: #E0E0E0 !important; border-left: 2px solid #D4AF37 !important; }
     
     button { background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important; background-color: #D4AF37 !important; border: none !important; opacity: 1 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important; padding: 0.5rem 1rem !important; border-radius: 0.5rem !important; }
     button p, button div, button span { color: #000000 !important; font-weight: 900 !important; font-size: 1rem !important; }
@@ -216,13 +247,7 @@ st.markdown("""
     .stMetricValue { color: #D4AF37 !important; }
     div[data-testid="column"] { background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px; }
     
-    /* 툴팁 스타일 */
-    div[data-baseweb="popover"], div[data-baseweb="tooltip"] { background-color: #1A1A1A !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important; max-width: 400px !important; }
-    div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
-    
-    /* Registered Dreamers 스타일 (Cinzel + Gold) */
     .dreamer-count-header { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.2em; font-weight: bold; text-align: right; }
-    
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
     .defi-desc-box { background-color: #111111 !important; padding: 30px !important; border-radius: 15px !important; border: 1px solid #333 !important; margin-top: 30px; margin-bottom: 30px; }
@@ -360,7 +385,6 @@ if not st.session_state.user_id:
 # ==========================================
 user_count = get_user_count()
 
-# 3. 보상 계산 로직 (유저 자율 입력 기반)
 def calculate_dream_quality_score(context, s1, s2, s3, s4, current_halving_multiplier):
     base_score = 1000 
     # 글자 수 기반 정성 평가
@@ -541,7 +565,7 @@ with col_left:
     with st.form("left_form"):
         status = T['status_edit'] if st.session_state.current_dream_id else T['status_new']
         st.caption(status)
-        dream_raw = st.text_area("Dream Content", value=st.session_state.dream_context, height=450)
+        dream_raw = st.text_area("Dream Content", value=st.session_state.dream_context, height=450, help="스크롤하여 긴 내용을 확인하세요.")
         c1, c2 = st.columns(2)
         with c1:
             if st.form_submit_button(T['save_btn']):
@@ -568,20 +592,31 @@ with col_right:
     
     with st.form("mint_form"):
         # 1단계
-        st.text_area(T['s1_label'], help=T['s1_help'], key="s1_val", height=100)
+        with st.expander(f"💡 {T['s1_label']} (가이드 보기)"):
+            st.markdown(T['guide_s1'])
+        st.text_area("Enter Associations", key="s1_val", height=120, label_visibility="collapsed")
+
         # 2단계
-        st.text_area(T['s2_label'], help=T['s2_help'], key="s2_val", height=100)
+        with st.expander(f"💡 {T['s2_label']} (가이드 보기)"):
+            st.markdown(T['guide_s2'])
+        st.text_area("Enter Dynamics", key="s2_val", height=120, label_visibility="collapsed")
+
         # 3단계
-        st.text_area(T['s3_label'], help=T['s3_help'], key="s3_val", height=150)
+        with st.expander(f"💡 {T['s3_label']} (가이드 보기)"):
+            st.markdown(T['guide_s3'])
+        st.text_area("Enter Interpretation", key="s3_val", height=150, label_visibility="collapsed")
+
         # 4단계
-        st.markdown(f"#### {T['s4_label']}", help=T['s4_help'])
-        if st.session_state.is_minted and st.session_state.existing_value: st.info(f"📉 Prev Value: {st.session_state.existing_value}")
-        st.text_input("Action", key="s4_val")
+        with st.expander(f"💡 {T['s4_label']} (가이드 보기)"):
+            st.markdown(T['guide_s4'])
+        
+        if st.session_state.is_minted and st.session_state.existing_value: 
+            st.info(f"📉 Prev Value: {st.session_state.existing_value}")
+        st.text_input("Enter Ritual Action", key="s4_val", label_visibility="collapsed")
         
         final_btn = T['update_btn'] if st.session_state.is_minted else T['mint_btn']
         
         if st.form_submit_button(final_btn):
-            # 모든 필드가 채워져야 채굴 가능
             if st.session_state.s1_val and st.session_state.s2_val and st.session_state.s3_val and st.session_state.s4_val and st.session_state.dream_context:
                 
                 token_val = calculate_dream_quality_score(
