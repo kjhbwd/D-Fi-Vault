@@ -6,7 +6,7 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v13.13", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="D-Fi Vault v13.14", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -245,7 +245,7 @@ def get_user_count():
     except: return 0
 
 # ==========================================
-# 🚪 1차 관문: Manifesto (입장 전) - 중앙 배치
+# 🚪 1차 관문: Manifesto (입장 전)
 # ==========================================
 if not st.session_state.access_granted:
     # 입장 전 화면: 중앙 상단 언어 설정
@@ -291,10 +291,10 @@ if not st.session_state.access_granted:
 # ==========================================
 # 🏛️ 2차/3차 관문 및 메인 로직
 # ==========================================
-T = LANG[st.session_state.language] # 언어 세팅
+T = LANG[st.session_state.language] 
 
 if not st.session_state.user_id:
-    # (ID 체크 및 로그인 화면) - 여기도 중앙 상단에 언어 설정 필요 시 추가 가능하지만 심플하게 유지
+    # (ID 체크 및 로그인 화면)
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         st.markdown("<br><br>", unsafe_allow_html=True)
@@ -349,12 +349,10 @@ if not st.session_state.user_id:
 # 💎 DASHBOARD (로그인 성공 후)
 # ==========================================
 
-# 1. 🟢 [LAYOUT FIX] 상단 헤더 분할 (좌: Era 정보 / 우: 언어설정 & Dreamers)
+# 1. 상단 헤더 분할
 user_count = get_user_count()
-_, _, _, _, current_era_tmp = 0,0,0,1,0 # 임시 초기화
-# DB 계산은 아래 get_global_status에서 하므로, 여기서는 레이아웃만 먼저 잡음
 
-# 2. 메인 로직 실행
+# 2. 메인 로직 함수들
 def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
     keywords = {
         "옷": "persona", "clothes": "persona", "uniform": "persona", "mask": "persona", "가면": "persona",
@@ -506,6 +504,45 @@ with c_d4:
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 
+# 👑 [ADMIN PANEL] - 메인 화면 중앙 배치 (사이드바 아님!)
+if st.session_state.user_id == ADMIN_USER:
+    st.markdown("---")
+    st.markdown(f"#### 👑 Administrator Panel (ID: {st.session_state.user_id})")
+
+    if not st.session_state.is_admin_unlocked:
+        with st.form("admin_unlock_form"):
+            st.caption("Enter Master Key to access Ledger & Burn functions")
+            master_input = st.text_input(T['master_key_ph'], type="password")
+            if st.form_submit_button("Unlock Admin Mode"):
+                if master_input == MASTER_KEY:
+                    st.session_state.is_admin_unlocked = True
+                    st.toast("🔓 Admin Mode Unlocked!")
+                    st.rerun()
+                else:
+                    st.error("Access Denied")
+    else:
+        # 관리자 모드 잠금 해제됨 - 대시보드 표시
+        ad_c1, ad_c2 = st.columns(2)
+        with ad_c1:
+            st.info(f"📊 {T['ledger_title']}")
+            if st.button("🔄 Refresh Ledger"): st.rerun()
+            df_ledger = get_ledger_data()
+            if not df_ledger.empty: st.dataframe(df_ledger, use_container_width=True)
+            else: st.write("No active data.")
+            
+        with ad_c2:
+            st.error(f"🔥 {T['burn_title']}")
+            st.warning(T['burn_desc'])
+            if st.button(T['burn_btn']):
+                supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
+                st.toast(T['burn_success'])
+                time.sleep(2)
+                st.rerun()
+                
+        if st.button("🔒 Lock Admin"):
+            st.session_state.is_admin_unlocked = False
+            st.rerun()
+
 st.markdown("---")
 
 col_left, col_right = st.columns(2)
@@ -631,41 +668,4 @@ with col_right:
                 </div>
                 """, unsafe_allow_html=True)
                 time.sleep(3) 
-                st.rerun()
-
-# 🛡️ [SECURITY] 관리자 메뉴 & 디버깅 (사이드바)
-with st.sidebar:
-    st.markdown("---")
-    # 🔴 [범인 색출용 디버깅] - 나중에 삭제 가능
-    st.caption(f"🔑 ID Check: {st.session_state.user_id}")
-    
-    if st.session_state.user_id == ADMIN_USER:
-        if not st.session_state.is_admin_unlocked:
-            with st.expander(T['admin_unlock'], expanded=True):
-                master_input = st.text_input(T['master_key_ph'], type="password")
-                if st.button("Unlock"):
-                    if master_input == MASTER_KEY:
-                        st.session_state.is_admin_unlocked = True
-                        st.toast("🔓 Admin Mode Unlocked!")
-                        st.rerun()
-                    else: st.error("Access Denied")
-        else:
-            st.success("🔓 Admin Mode Active")
-            with st.expander(f"{T['ledger_title']}", expanded=True):
-                st.caption(T['ledger_desc'])
-                if st.button("🔄 Refresh"): st.rerun()
-                df_ledger = get_ledger_data()
-                if not df_ledger.empty: st.dataframe(df_ledger, use_container_width=True)
-                else: st.write("No active data.")
-            
-            st.markdown("---")
-            with st.expander(f"{T['burn_title']}", expanded=False):
-                st.warning(T['burn_desc'])
-                if st.button(T['burn_btn']):
-                    supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
-                    st.toast(T['burn_success'])
-                    time.sleep(2)
-                    st.rerun()
-            if st.button("🔒 Lock Admin"):
-                st.session_state.is_admin_unlocked = False
                 st.rerun()
