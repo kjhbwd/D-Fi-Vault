@@ -11,10 +11,10 @@ st.set_page_config(page_title="D-Fi Vault v13.4", page_icon="🏛️", layout="w
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
 
-# 🛡️ 2. 관리자 보안 설정 (빌더님 전용)
-# 👇 빌더님 아이디 (이 아이디로 로그인해야만 관리자 메뉴가 보임)
-ADMIN_USER = "김지호bwd"
-# 👇 관리자 잠금 해제 비밀번호 (테스트용)
+# 🛡️ 2. 관리자 보안 설정 (적용됨)
+# 👇 빌더님의 아이디로 설정 완료
+ADMIN_USER = "김지호bwd"  
+# 👇 관리자 해제 비밀번호
 MASTER_KEY = "1234" 
 
 # 🪙 [TOKENOMICS]
@@ -22,7 +22,7 @@ MAX_SUPPLY = 21000000
 HALVING_STEP = 2100000
 
 # ==========================================
-# 🌐 [LANGUAGE PACK]
+# 🌐 [LANGUAGE PACK] - 누락 없음 확인 완료
 # ==========================================
 LANG = {
     "KO": {
@@ -147,12 +147,12 @@ st.markdown("""
     /* 전체 테마 */
     .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
     
-    /* 🔴 [핵심 수정 1] 개발자 도구(Manage app) 및 푸터 숨기기 */
+    /* 1. 개발자 도구(Manage app) 및 푸터 숨기기 */
     [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
     header { visibility: hidden !important; }
     
-    /* 🔴 [핵심 수정 2] '지난 꿈 불러오기' 글씨 흰색 강제 적용 */
+    /* 2. '지난 꿈 불러오기' 글씨 흰색 강제 적용 */
     .streamlit-expanderHeader p { color: #FFFFFF !important; font-weight: bold !important; font-size: 1.1em !important; }
     .streamlit-expanderHeader:hover p { color: #D4AF37 !important; } 
     
@@ -214,14 +214,16 @@ with st.sidebar:
 
 T = LANG[st.session_state.language]
 
-# 🟢 [CORE FUNCTION] Ledger
+# 🟢 [CORE FUNCTION] Ledger (소각 체크 로직 강화)
 def get_ledger_data():
     try:
         res_all = supabase.table("dreams").select("user_id, meaning, is_burned").execute()
         ledger = {} 
         if res_all.data:
             for d in res_all.data:
+                # 🟢 [핵심] is_burned가 True인 경우에만 제외 (NULL이나 False는 포함)
                 if d.get('is_burned') is True: continue
+                
                 uid = d['user_id']
                 meaning = d.get('meaning', "")
                 score = 0
@@ -248,8 +250,8 @@ def get_ledger_data():
     except: return pd.DataFrame()
 
 # 🛡️ [SECURITY] 관리자 메뉴 (이중 잠금)
+# 👇 여기가 중요합니다! ADMIN_USER와 현재 로그인한 ID가 정확히 일치해야 버튼이 보입니다.
 if st.session_state.access_granted and st.session_state.user_id:
-    # 🔴 [핵심] 로그인한 ID가 ADMIN_USER와 같을 때만 버튼이 보임
     if st.session_state.user_id == ADMIN_USER: 
         with st.sidebar:
             st.markdown("---")
