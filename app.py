@@ -6,8 +6,7 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-# 사이드바 강제 확장
-st.set_page_config(page_title="D-Fi Vault v13.11", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="D-Fi Vault v13.12", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -19,6 +18,9 @@ MASTER_KEY = "1234"
 # 🪙 [TOKENOMICS]
 MAX_SUPPLY = 21000000
 HALVING_STEP = 2100000
+
+# 🟢 [CORE] 언어 설정 초기화
+if 'language' not in st.session_state: st.session_state.language = "KO"
 
 # ==========================================
 # 🌐 [LANGUAGE PACK]
@@ -203,8 +205,9 @@ st.markdown("""
     div[data-baseweb="popover"], div[data-baseweb="tooltip"] { background-color: #1A1A1A !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important; max-width: 400px !important; }
     div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
     
-    /* Registered Dreamers 스타일 */
-    .dreamer-count { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.2em; text-align: center; padding: 10px; border-top: 1px solid #333; margin-top: 20px; }
+    /* Registered Dreamers 스타일 (Cinzel + Gold) */
+    .dreamer-count { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.5em; text-align: center; padding: 10px; margin-top: 20px; border-top: 1px solid #333; }
+    .dreamer-count-main { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.2em; text-align: center; margin-top: 10px; opacity: 0.8; }
     
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
@@ -220,7 +223,6 @@ if 'access_granted' not in st.session_state: st.session_state.access_granted = F
 if 'user_id' not in st.session_state: st.session_state.user_id = None
 if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
-if 'language' not in st.session_state: st.session_state.language = "KO"
 if 'is_admin_unlocked' not in st.session_state: st.session_state.is_admin_unlocked = False 
 
 for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
@@ -234,105 +236,9 @@ try:
     supabase: Client = create_client(url, key)
 except: st.error("DB Connection Error")
 
-# =========================================================
-# 🟢 [GLOBAL SIDEBAR] 모든 화면에서 항상 보이는 공통 구역
-# =========================================================
-with st.sidebar:
-    # 1. 언어 설정 (항상 최상단 노출)
-    lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
-    if lang_choice != st.session_state.language:
-        st.session_state.language = lang_choice
-        st.rerun()
-    
-    T = LANG[st.session_state.language]
-    
-    # 2. Registered Dreamers 카운터 (신규 기능)
-    st.markdown("---")
-    try:
-        # users 테이블의 전체 행 개수(count)만 가져옴
-        count_res = supabase.table("users").select("username", count="exact").execute()
-        user_count = count_res.count if count_res.count else 0
-    except:
-        user_count = 0 # 에러 시 0으로 표시
-        
-    st.markdown(f"""
-        <div class='dreamer-count'>
-            ✨ {T['reg_dreamers']} : {user_count:,}
-        </div>
-    """, unsafe_allow_html=True)
+T = LANG[st.session_state.language]
 
-    # 3. 관리자 메뉴 (로그인한 관리자에게만 노출)
-    if st.session_state.user_id == ADMIN_USER:
-        st.markdown("---")
-        if not st.session_state.is_admin_unlocked:
-            with st.expander(T['admin_unlock'], expanded=True):
-                master_input = st.text_input(T['master_key_ph'], type="password")
-                if st.button("Unlock"):
-                    if master_input == MASTER_KEY:
-                        st.session_state.is_admin_unlocked = True
-                        st.toast("🔓 Admin Mode Unlocked!")
-                        st.rerun()
-                    else:
-                        st.error("Access Denied")
-        else:
-            st.success("🔓 Admin Mode Active")
-            
-            # 장부 보기 함수 재사용을 위해 아래 정의된 함수를 여기서 호출하려면 순서상 에러가 날 수 있음.
-            # 해결책: get_ledger_data 함수를 이 블록 위로 올리거나, 여기서 직접 쿼리.
-            # 깔끔하게 함수 정의를 상단으로 올리는 것이 좋으나, 편의상 여기서 직접 쿼리 실행
-            try:
-                res_all = supabase.table("dreams").select("user_id, meaning, is_burned").execute()
-                ledger = {} 
-                if res_all.data:
-                    for d in res_all.data:
-                        if d.get('is_burned') is True: continue
-                        uid = d['user_id']
-                        meaning = d.get('meaning', "")
-                        score = 0
-                        if meaning and "Value:" in meaning:
-                            try:
-                                score_text = meaning.split("Value: ")[1]
-                                if "Dream Pts" in score_text: part = score_text.split(" Dream Pts")[0]
-                                elif "Tokens" in score_text: part = score_text.split(" Tokens")[0]
-                                else: part = "0"
-                                score = int(part.replace(",", ""))
-                            except: pass
-                        if uid not in ledger: ledger[uid] = [0, 0]
-                        ledger[uid][0] += score
-                        ledger[uid][1] += 1
-                ledger_list = []
-                for uid, data in ledger.items():
-                    ledger_list.append({"User ID": uid, "Active Assets (Pts)": data[0], "Blocks": data[1]})
-                df_ledger = pd.DataFrame(ledger_list)
-                if not df_ledger.empty:
-                    df_ledger = df_ledger.sort_values(by="Active Assets (Pts)", ascending=False).reset_index(drop=True)
-                    df_ledger.index = df_ledger.index + 1
-                    df_ledger.index.name = "Rank"
-            except: df_ledger = pd.DataFrame()
-
-            with st.expander(f"{T['ledger_title']}", expanded=True):
-                st.caption(T['ledger_desc'])
-                if st.button("🔄 Refresh"):
-                    st.rerun()
-                if not df_ledger.empty:
-                    st.dataframe(df_ledger, use_container_width=True)
-                else:
-                    st.write("No active data.")
-            
-            st.markdown("---")
-            with st.expander(f"{T['burn_title']}", expanded=False):
-                st.warning(T['burn_desc'])
-                if st.button(T['burn_btn']):
-                    supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
-                    st.toast(T['burn_success'])
-                    time.sleep(2)
-                    st.rerun()
-            
-            if st.button("🔒 Lock Admin"):
-                st.session_state.is_admin_unlocked = False
-                st.rerun()
-
-# ... (Analysis Engine) ...
+# --- 기능 함수들 ---
 def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
     keywords = {
         "옷": "persona", "clothes": "persona", "uniform": "persona", "mask": "persona", "가면": "persona",
@@ -397,6 +303,38 @@ def calculate_dream_quality_score(context, s1, s2, s3, s4, current_halving_multi
     final_score = int(raw_score * current_halving_multiplier)
     return min(10000, final_score)
 
+def get_ledger_data():
+    try:
+        res_all = supabase.table("dreams").select("user_id, meaning, is_burned").execute()
+        ledger = {} 
+        if res_all.data:
+            for d in res_all.data:
+                if d.get('is_burned') is True: continue
+                uid = d['user_id']
+                meaning = d.get('meaning', "")
+                score = 0
+                if meaning and "Value:" in meaning:
+                    try:
+                        score_text = meaning.split("Value: ")[1]
+                        if "Dream Pts" in score_text: part = score_text.split(" Dream Pts")[0]
+                        elif "Tokens" in score_text: part = score_text.split(" Tokens")[0]
+                        else: part = "0"
+                        score = int(part.replace(",", ""))
+                    except: pass
+                if uid not in ledger: ledger[uid] = [0, 0]
+                ledger[uid][0] += score
+                ledger[uid][1] += 1
+        ledger_list = []
+        for uid, data in ledger.items():
+            ledger_list.append({"User ID": uid, "Active Assets (Pts)": data[0], "Blocks": data[1]})
+        df = pd.DataFrame(ledger_list)
+        if not df.empty:
+            df = df.sort_values(by="Active Assets (Pts)", ascending=False).reset_index(drop=True)
+            df.index = df.index + 1
+            df.index.name = "Rank"
+        return df
+    except: return pd.DataFrame()
+
 def get_global_status(current_user):
     try:
         res_all = supabase.table("dreams").select("meaning, user_id, is_burned").execute()
@@ -427,9 +365,16 @@ def get_global_status(current_user):
     except: return 0, 0, 0, 1, 0
 
 # ==========================================
-# 🚪 1차 관문: Manifesto (입장)
+# 🚪 1차 관문: Manifesto (입장 전) - 중앙 배치
 # ==========================================
 if not st.session_state.access_granted:
+    # 🟢 [수정] 첫 화면에서는 언어 설정을 화면 중앙 상단에 배치 (사이드바 아님)
+    col_lang1, col_lang2, col_lang3 = st.columns([8, 2, 1])
+    with col_lang2:
+        lang_choice = st.radio("Language", ["KO", "EN"], horizontal=True, label_visibility="collapsed")
+        st.session_state.language = lang_choice
+    T = LANG[st.session_state.language] # 언어 즉시 적용
+
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         st.markdown("<br>", unsafe_allow_html=True)
@@ -456,11 +401,71 @@ if not st.session_state.access_granted:
                     time.sleep(0.5)
                     st.rerun()
                 else: st.error(T['login_error'])
+        
+        # 🟢 [수정] 첫 화면용 Registered Dreamers (화면 하단)
+        try:
+            count_res = supabase.table("users").select("username", count="exact").execute()
+            user_count = count_res.count if count_res.count else 0
+        except: user_count = 0
+        st.markdown(f"<div class='dreamer-count-main'>✨ {T['reg_dreamers']} : {user_count:,}</div>", unsafe_allow_html=True)
+
     st.stop()
 
 # ==========================================
-# 🚪 2차 관문: Identity Check
+# 🚪 2차 관문 이후 (로그인 후) - 사이드바 사용
 # ==========================================
+# 🟢 [수정] 로그인 후에만 사이드바가 나타나도록 배치
+with st.sidebar:
+    # 1. 언어 설정
+    lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
+    if lang_choice != st.session_state.language:
+        st.session_state.language = lang_choice
+        st.rerun()
+    
+    T = LANG[st.session_state.language]
+    
+    # 2. Registered Dreamers (사이드바)
+    st.markdown("---")
+    try:
+        count_res = supabase.table("users").select("username", count="exact").execute()
+        user_count = count_res.count if count_res.count else 0
+    except: user_count = 0
+    st.markdown(f"<div class='dreamer-count'>✨ {T['reg_dreamers']} : {user_count:,}</div>", unsafe_allow_html=True)
+
+    # 3. 관리자 메뉴 (로그인한 관리자만)
+    if st.session_state.user_id == ADMIN_USER:
+        st.markdown("---")
+        if not st.session_state.is_admin_unlocked:
+            with st.expander(T['admin_unlock'], expanded=True):
+                master_input = st.text_input(T['master_key_ph'], type="password")
+                if st.button("Unlock"):
+                    if master_input == MASTER_KEY:
+                        st.session_state.is_admin_unlocked = True
+                        st.toast("🔓 Admin Mode Unlocked!")
+                        st.rerun()
+                    else: st.error("Access Denied")
+        else:
+            st.success("🔓 Admin Mode Active")
+            with st.expander(f"{T['ledger_title']}", expanded=True):
+                st.caption(T['ledger_desc'])
+                if st.button("🔄 Refresh"): st.rerun()
+                df_ledger = get_ledger_data()
+                if not df_ledger.empty: st.dataframe(df_ledger, use_container_width=True)
+                else: st.write("No active data.")
+            
+            st.markdown("---")
+            with st.expander(f"{T['burn_title']}", expanded=False):
+                st.warning(T['burn_desc'])
+                if st.button(T['burn_btn']):
+                    supabase.table("dreams").update({"is_burned": True}).eq("user_id", st.session_state.user_id).execute()
+                    st.toast(T['burn_success'])
+                    time.sleep(2)
+                    st.rerun()
+            if st.button("🔒 Lock Admin"):
+                st.session_state.is_admin_unlocked = False
+                st.rerun()
+
+# --- 여기서부터 메인 앱 로직 (기존과 동일) ---
 if not st.session_state.user_id:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
@@ -513,7 +518,7 @@ if not st.session_state.user_id:
     st.stop()
 
 # ==========================================
-# 🏛️ MAIN APP
+# 🏛️ MAIN APP DASHBOARD
 # ==========================================
 my_assets, my_mining_count, global_supply, mining_multiplier, current_era = get_global_status(st.session_state.user_id)
 supply_progress = min(1.0, global_supply / MAX_SUPPLY)
