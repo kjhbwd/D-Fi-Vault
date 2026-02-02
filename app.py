@@ -13,7 +13,7 @@ COMMUNITY_PASSWORD = "2026"
 
 # 🛡️ 2. 관리자 보안 설정 (빌더님 전용)
 # 👇 빌더님 아이디 (이 아이디로 로그인해야만 관리자 메뉴가 보임)
-ADMIN_USER = "dreamer01"  
+ADMIN_USER = "김지호bwd"
 # 👇 관리자 잠금 해제 비밀번호 (테스트용)
 MASTER_KEY = "1234" 
 
