@@ -4,10 +4,10 @@ import time
 import datetime
 import random
 import pandas as pd
-import pytz # 시간대 처리를 위한 라이브러리
+import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v18.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v20.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -23,11 +23,12 @@ DAILY_CAP = 10000 # 하루 채굴 한도
 
 # 🟢 [CORE] 언어 및 시간 설정
 if 'language' not in st.session_state: st.session_state.language = "KO"
-KST = pytz.timezone('Asia/Seoul') # 한국 시간 기준
+KST = pytz.timezone('Asia/Seoul')
 
 # ==========================================
-# 📚 [CONTENT PACK] - 가이드 텍스트 (v17 유지)
+# 📚 [CONTENT PACK] - 100% 가이드 텍스트
 # ==========================================
+
 GUIDE_S1_FULL = """
 **[실례 상황 설정]**
 꿈 내용: "나는 낡고 허름한 내 옛날 초등학교 교실에 앉아 있다. 칠판 앞에 검은 옷을 입은 낯선 남자가 서 있는데, 나에게 오래된 시계를 건네주며 '이걸 고치라'고 말한다. 나는 고칠 줄 몰라 당황한다."
@@ -281,7 +282,7 @@ def get_user_count():
         return count_res.count if count_res.count else 0
     except: return 0
 
-# 📅 오늘 내가 채굴한 총량 계산 (일일 한도 체크용)
+# 📅 오늘 내가 채굴한 총량 계산
 def get_today_mined_count(user_id):
     try:
         now_kst = datetime.datetime.now(KST)
@@ -467,7 +468,7 @@ def get_global_status(current_user):
 my_assets, my_mining_count, global_supply, mining_multiplier, current_era = get_global_status(st.session_state.user_id)
 supply_progress = min(1.0, global_supply / MAX_SUPPLY)
 
-# 📊 [NEW] 오늘 채굴량 확인
+# 📊 오늘 채굴량 확인
 today_mined = get_today_mined_count(st.session_state.user_id)
 daily_remaining = max(0, DAILY_CAP - today_mined)
 daily_progress = min(1.0, today_mined / DAILY_CAP)
@@ -486,7 +487,7 @@ with c_header_2:
     with sub_c2:
         st.markdown(f"<div class='dreamer-count-header'>✨ Dreamers: {user_count:,}</div>", unsafe_allow_html=True)
 
-# 1. 글로벌 공급량 바
+# 글로벌 공급량 바
 st.progress(supply_progress)
 c_d1, c_d2, c_d3, c_d4 = st.columns(4)
 with c_d1: st.metric(T['dash_global'], f"{global_supply:,} / {MAX_SUPPLY:,}", delta=f"{supply_progress*100:.2f}%")
@@ -497,7 +498,7 @@ with c_d4:
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 
-# 2. [NEW] 일일 에너지 게이지 표시
+# 일일 에너지 게이지 표시
 st.markdown("---")
 st.markdown(f"**⚡ Daily Mining Energy** ({today_mined:,} / {DAILY_CAP:,} Pts)")
 st.progress(daily_progress)
@@ -555,6 +556,7 @@ col_left, col_right = st.columns(2)
 
 with col_left:
     st.markdown(f"### {T['left_title']}")
+    # 📌 꿈 불러오기 로직 (수정됨: 3, 4단계도 DB에서 불러와서 세션에 저장)
     with st.expander(T['load_dreams'], expanded=False):
         try:
             res = supabase.table("dreams").select("*").eq("user_id", st.session_state.user_id).order("created_at", desc=True).limit(5).execute()
@@ -565,9 +567,10 @@ with col_left:
                         if st.button(T['load_btn'], key=f"L_{d['id']}"):
                             st.session_state.current_dream_id = d['id']
                             st.session_state.dream_context = d.get('context', "")
+                            # 여기서 1~4단계를 모두 로드하여 입력창에 넣음
                             st.session_state.s1_val = d.get('symbol', "")
                             st.session_state.s2_val = d.get('block', "")
-                            st.session_state.s3_val = d.get('analysis', "")
+                            st.session_state.s3_val = d.get('analysis', "") 
                             st.session_state.s4_val = d.get('ritual_self', "")
                             meaning_text = d.get('meaning', "")
                             st.session_state.existing_value = meaning_text if meaning_text else "N/A"
@@ -586,7 +589,8 @@ with col_left:
     with st.form("left_form"):
         status = T['status_edit'] if st.session_state.current_dream_id else T['status_new']
         st.caption(status)
-        dream_raw = st.text_area("Dream Content", value=st.session_state.dream_context, height=450, help="스크롤하여 긴 내용을 확인하세요.")
+        # 📌 1. [UI 개선] 왼쪽 입력창 높이 증가 (450 -> 680)
+        dream_raw = st.text_area("Dream Content", value=st.session_state.dream_context, height=680, help="스크롤하여 긴 내용을 확인하세요.")
         c1, c2 = st.columns(2)
         with c1:
             if st.form_submit_button(T['save_btn']):
@@ -609,13 +613,12 @@ with col_left:
                     st.rerun()
 
 with col_right:
-    # 3. [NEW] Early Bird 체크 (새벽 4시 ~ 8시)
+    # Early Bird 체크 (새벽 4시 ~ 8시)
     now_hour = datetime.datetime.now(KST).hour
     is_early_bird = 4 <= now_hour < 8
     
     st.markdown(f"### {T['right_title']}")
     
-    # 배지 표시
     if is_early_bird:
         st.markdown("#### 🌞 Early Bird Active (x1.5 Bonus)")
     else:
@@ -643,12 +646,14 @@ with col_right:
         
         if st.session_state.is_minted and st.session_state.existing_value: 
             st.info(f"📉 Prev Value: {st.session_state.existing_value}")
-        st.text_input("Enter Ritual Action", key="s4_val", label_visibility="collapsed")
+        
+        # 📌 2. [UI 개선] 4단계 입력창을 text_area로 변경
+        st.text_area("Enter Ritual Action", key="s4_val", height=100, label_visibility="collapsed")
         
         final_btn = T['update_btn'] if st.session_state.is_minted else T['mint_btn']
         
         if st.form_submit_button(final_btn):
-            # 4. [NEW] 빈칸 정밀 체크
+            # 빈칸 정밀 체크
             errors = []
             if not st.session_state.dream_context: errors.append("꿈 내용(왼쪽)")
             if not st.session_state.s1_val: errors.append("1단계(연상)")
@@ -657,7 +662,7 @@ with col_right:
             if not st.session_state.s4_val: errors.append("4단계(의례)")
             
             if not errors:
-                # 5. [NEW] 한도 체크
+                # 한도 체크
                 if daily_remaining <= 0:
                     st.error("🛑 오늘의 채굴 한도(10,000 Pts)를 모두 소진했습니다. 내일 다시 시도하세요!")
                 else:
@@ -668,7 +673,7 @@ with col_right:
                                      (len(st.session_state.s3_val) * 5) + \
                                      (len(st.session_state.s4_val) * 10)
                     
-                    # 6. [NEW] 보너스 및 한도 적용
+                    # 보너스 및 한도 적용
                     early_bonus = 1.5 if is_early_bird else 1.0
                     calculated_score = int(base_score_raw * mining_multiplier * early_bonus)
                     
