@@ -5,12 +5,12 @@ import datetime
 import random
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v12.7", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v12.8", page_icon="🏛️", layout="wide")
 
 # 🔒 1차 관문: 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "korea2026"
 
-# --- CSS: 디자인 (툴팁 강제 수정 & Deep Dark) ---
+# --- CSS: 디자인 (툴팁 & 알림창 커스텀) ---
 st.markdown("""
     <style>
     /* 1. 전체 테마 강제 적용 */
@@ -34,9 +34,12 @@ st.markdown("""
         background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important;
     }
     
-    /* 4. 라벨 색상 강제 지정 */
-    label, .stMarkdown label, p {
+    /* 4. 텍스트 색상 */
+    label, .stMarkdown label, p, .stMetricLabel {
         color: #E0E0E0 !important;
+    }
+    .stMetricValue {
+        color: #D4AF37 !important; /* 숫자 금색 */
     }
     
     /* 5. 컨테이너 스타일 */
@@ -44,23 +47,18 @@ st.markdown("""
         background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px;
     }
     
-    /* 🟢 [핵심 수정] 툴팁(물음표) 스타일 강제 오버라이딩 (Browser Style Injection) */
+    /* 6. 툴팁(물음표) 스타일 강제 오버라이딩 */
     div[data-baseweb="popover"], div[data-baseweb="tooltip"] {
         background-color: #1A1A1A !important;
         border: 1px solid #D4AF37 !important;
         border-radius: 8px !important;
         max-width: 400px !important;
     }
-    /* 툴팁 내부 텍스트 색상 */
     div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div {
         color: #FFFFFF !important;
         background-color: #1A1A1A !important;
     }
-    /* 화살표 제거 혹은 색상 맞춤 */
-    div[data-baseweb="popover"] .arrow, div[data-baseweb="tooltip"] .arrow {
-        background-color: #1A1A1A !important;
-    }
-
+    
     /* 7. 헤더/푸터 및 경고 숨김 */
     header, footer { visibility: hidden !important; }
     .stAlert { display: none; } 
@@ -103,7 +101,7 @@ try:
 except: st.error("DB 연결 오류")
 
 # ==========================================
-# 🧠 [CORE LOGIC] 문맥 반영 심층 해석 & 점수 채굴 엔진
+# 🧠 [CORE LOGIC] 엔진
 # ==========================================
 def analyze_dream_engine_v2(context, symbol, dynamics):
     keywords = {
@@ -181,21 +179,14 @@ def analyze_dream_engine_v2(context, symbol, dynamics):
     result['ritual'] = selected_ritual
     return result
 
-# 🟢 [질적 평가 알고리즘] 꿈의 정성도를 점수로 환산
 def calculate_dream_quality_score(context, s1, s2, s3, s4):
-    base_score = 1000 # 기본 점수
-    
-    # 글자 수 기반 정성 평가 (단순 길이 x 가중치)
+    base_score = 1000 
     score_context = len(context) * 2 if context else 0
     score_s1 = len(s1) * 5 if s1 else 0
     score_s2 = len(s2) * 5 if s2 else 0
-    score_s3 = len(s3) * 5 if s3 else 0 # 해석은 자동생성이지만 수정 가능성을 염두
-    score_s4 = len(s4) * 10 if s4 else 0 # 의례 실천이 가장 중요하므로 가중치 높음
-    
-    total_score = base_score + score_context + score_s1 + score_s2 + score_s3 + score_s4
-    
-    # 너무 큰 점수 방지 (Max 10,000)
-    return min(10000, total_score)
+    score_s3 = len(s3) * 5 if s3 else 0 
+    score_s4 = len(s4) * 10 if s4 else 0 
+    return min(10000, base_score + score_context + score_s1 + score_s2 + score_s3 + score_s4)
 
 # ==========================================
 # 🚪 1차 관문: Manifesto
@@ -288,7 +279,7 @@ if not st.session_state.user_id:
                         st.balloons()
                         st.rerun()
                     else: st.warning("비밀번호를 입력해주세요.")
-            if st.button("⬅️ 뒤로 가기"):
+            if button("⬅️ 뒤로 가기"):
                 st.session_state.auth_step = "check_id"
                 st.rerun()
     st.stop()
@@ -296,41 +287,41 @@ if not st.session_state.user_id:
 # ==========================================
 # 🏛️ MAIN APP: WORKSPACE
 # ==========================================
-def get_daily_tokens(user):
+# 🟢 [핵심 수정] 함수명 변경: get_daily_tokens -> get_total_tokens
+def get_total_tokens(user):
     try:
-        today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-        res = supabase.table("dreams").select("*").eq("user_id", user).order("created_at", desc=True).limit(50).execute()
+        # 날짜 필터링 제거 -> 모든 기록 합산
+        res = supabase.table("dreams").select("*").eq("user_id", user).order("created_at", desc=True).limit(100).execute()
         total_score = 0
         count = 0
         if res.data:
             for d in res.data:
-                # 오늘 날짜 확인 (또는 전체 누적을 원하시면 이 if문 제거 가능)
-                if d['created_at'].startswith(today_str):
-                    meaning = d.get('meaning', "")
-                    # 🟢 [핵심 수정] Dream Pts와 Tokens 둘 다 인식 (계산기 수리)
-                    if meaning and "Value:" in meaning:
-                        try:
-                            score_text = meaning.split("Value: ")[1]
-                            if "Dream Pts" in score_text:
-                                score_part = score_text.split(" Dream Pts")[0]
-                            elif "Tokens" in score_text:
-                                score_part = score_text.split(" Tokens")[0]
-                            else:
-                                score_part = "0"
-                            
-                            score = int(score_part.replace(",", ""))
-                            total_score += score
-                            count += 1
-                        except: pass
+                meaning = d.get('meaning', "")
+                # Dream Pts와 Tokens 둘 다 인식 (호환성 유지)
+                if meaning and "Value:" in meaning:
+                    try:
+                        score_text = meaning.split("Value: ")[1]
+                        if "Dream Pts" in score_text:
+                            score_part = score_text.split(" Dream Pts")[0]
+                        elif "Tokens" in score_text:
+                            score_part = score_text.split(" Tokens")[0]
+                        else:
+                            score_part = "0"
+                        
+                        score = int(score_part.replace(",", ""))
+                        total_score += score
+                        count += 1
+                    except: pass
         return total_score, count
     except: return 0, 0
 
-daily_sum, daily_count = get_daily_tokens(st.session_state.user_id)
+# 전체 누적 자산 계산
+total_assets, total_count = get_total_tokens(st.session_state.user_id)
 
 col_dash1, col_dash2, col_dash3 = st.columns([0.6, 0.2, 0.2])
 with col_dash1: st.markdown(f"### 🏛️ Vault of {st.session_state.user_id}")
-# 🟢 [단위 수정] 0 T -> 0 Dream Pts
-with col_dash2: st.metric(label="Today's Mining", value=f"{daily_sum:,} Dream Pts", delta=f"{daily_count}건")
+# 🟢 [라벨 수정] Today's Mining -> Total Assets (누적 자산)
+with col_dash2: st.metric(label="Total Assets (누적 자산)", value=f"{total_assets:,} Dream Pts", delta=f"총 {total_count}건")
 with col_dash3:
     if st.button("🔒 로그아웃"):
         for key in list(st.session_state.keys()): del st.session_state[key]
@@ -483,7 +474,6 @@ with col_right:
         final_btn = "🏛️ 자산 정보 업데이트" if st.session_state.is_minted else "💎 최종 자산 발행 (Mint Token)"
         if st.form_submit_button(final_btn):
             if st.session_state.s1_val and s4:
-                # 🟢 [질적 평가 점수 적용]
                 token_val = calculate_dream_quality_score(
                     st.session_state.dream_context,
                     st.session_state.s1_val,
@@ -511,8 +501,15 @@ with col_right:
                 st.session_state.is_minted = True
                 st.session_state.existing_value = new_val_str 
                 
-                # 🟢 [3초 메시지]
+                # 🟢 [시각적 피드백 강화] 풍선 + 거대한 알림창 3초 유지
                 st.balloons()
-                st.success(f"✅ 의례 등록 완료! \n\n⛏️ 채굴된 가치: {token_val:,} Dream Pts")
-                time.sleep(3) # 3초 대기
-                st.rerun()
+                msg = st.empty() # 자리 표시자 생성
+                msg.markdown(f"""
+                <div style="background-color:#D4AF37; padding:20px; border-radius:10px; text-align:center; border:2px solid #FFFFFF;">
+                    <h2 style='color:black; margin:0;'>🎉 채굴 성공! (Minted)</h2>
+                    <h3 style='color:black; margin:10px 0;'>💎 +{token_val:,} Dream Pts</h3>
+                    <p style='color:black;'>당신의 무의식이 자산으로 변환되었습니다.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                time.sleep(3) # 3초간 보여줌
+                st.rerun() # 새로고침 (자산 합산 반영)
