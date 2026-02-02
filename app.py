@@ -7,7 +7,16 @@ import pandas as pd
 
 # [SYSTEM CONFIG]
 # 사이드바 강제 확장 (펼쳐진 상태로 시작)
-st.set_page_config(page_title="D-Fi Vault v13.7", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="D-Fi Vault v13.8", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+
+# 🟢 [CORE FIX] 언어 설정을 맨 위로 올림 (로그인 전에도 보임)
+if 'language' not in st.session_state: st.session_state.language = "KO"
+
+with st.sidebar:
+    lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
+    if lang_choice != st.session_state.language:
+        st.session_state.language = lang_choice
+        st.rerun()
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -21,7 +30,7 @@ MAX_SUPPLY = 21000000
 HALVING_STEP = 2100000
 
 # ==========================================
-# 🌐 [LANGUAGE PACK]
+# 🌐 [LANGUAGE PACK] - 상세 가이드 탑재 완료
 # ==========================================
 LANG = {
     "KO": {
@@ -59,14 +68,39 @@ LANG = {
         "save_btn": "💾 내 금고에 저장",
         "delete_btn": "🗑️ 삭제 (Delete)",
         "right_title": "🏛️ D-Fi 연금술",
+        
+        # 👇 [수정] 빌더님의 상세 가이드 적용 (KO)
         "s1_label": "🚀 Stage 1: 연상 (Association)",
-        "s1_help": "꿈을 훑어보며 떠오르는 이미지, 감정, 단어를 적으세요. '이 이미지를 보고 어떤 느낌이 드지?'라고 자문해보세요.",
+        "s1_help": """[수행 방법]
+1. 꿈을 '이미지' 단위로 쪼갭니다.
+2. 각 이미지마다 "이것을 보면 무엇이 떠오르는가?", "이 사람은 내 인생의 누구를 닮았는가?"라고 묻습니다.
+3. 방사형 연상: 중심 이미지에서 시작해 떠오르는 기억, 감정, 사람을 거미줄처럼 적어 내려갑니다.
+
+⚠️ 사각지대 (Critique):
+꿈 해몽 사전 금지: "뱀은 태몽이다" 같은 통속적 해석은 융 심리학에서 무의미합니다. 답은 오직 빌더님의 개인적 맥락(연상) 안에만 있습니다.""",
+        
         "s2_label": "🔍 Stage 2: 역학 (Dynamics)",
-        "s2_help": "그 상징이 꿈에서 어떤 행동을 했나요? 나는 어떤 감정을 느꼈나요?",
+        "s2_help": """[수행 방법]
+1. 주관적 해석 원칙: 꿈의 모든 등장인물은 외부인이 아니라, **내 내면의 일부(Part of Me)**라고 가정합니다. (예: 화내는 상사 = 내 안의 억압적 자아)
+2. 각 부분이 내면에서 어떻게 갈등하고, 누가 주도권을 쥐고 있는지 '역학 관계'를 파악합니다.
+
+⚠️ 사각지대 (Critique):
+외부 투사 금지: "저 상사가 나쁜 놈이네"라며 남 탓으로 돌리면 실패입니다. 꿈은 95% 이상이 나 자신의 이야기임을 인정해야 합니다.""",
+        
         "analyze_btn": "▼ 마스터 해석 가동 (ENTER)",
+        
         "s3_label": "🏛️ Stage 3: 해석 (Interpretation)",
+        # 해석은 결과창이므로 툴팁 대신 결과 텍스트에 포함되지만, UI 통일성을 위해 라벨은 유지
+        
         "s4_label": "💎 Stage 4: 의례 (Ritual)",
-        "s4_help": "꿈의 에너지를 현실로 가져오는 구체적인 행동입니다.",
+        "s4_help": """[수행 방법]
+해석된 메시지를 기리기(Honor) 위한 구체적인 행동을 합니다.
+- 꿈이 '휴식'을 원했나요? -> 실제로 1시간 멍때리기를 하세요.
+- 꿈이 '야성'을 원했나요? -> 숲길을 걷거나 소리를 지르세요.
+
+⚠️ 사각지대 (Critique):
+지적 유희 경계: 생각만 하고 끝내는 것은 "영혼에 대한 예의"가 아닙니다. 반드시 몸을 움직여 마침표를 찍으십시오.""",
+        
         "mint_btn": "💎 최종 자산 발행 (Mint Token)",
         "update_btn": "🏛️ 자산 정보 업데이트",
         "success_msg": "🎉 채굴 성공! (Minted)",
@@ -116,14 +150,38 @@ LANG = {
         "save_btn": "💾 Save to Vault",
         "delete_btn": "🗑️ Delete",
         "right_title": "🏛️ D-Fi Alchemy",
+        
+        # 👇 [수정] 영문판 상세 가이드 (번역 적용)
         "s1_label": "🚀 Stage 1: Association",
-        "s1_help": "Write down images, feelings, words from the dream. Ask yourself: 'What feeling does this image give me?'",
+        "s1_help": """[How to]
+1. Break the dream down into 'Images'.
+2. Ask yourself: "What does this remind me of?", "Who does this person resemble in my life?"
+3. Radial Association: Write down memories, feelings, and people like a web starting from the central image.
+
+⚠️ Critique:
+No Dream Dictionaries: Standard interpretations like "Snake = Wealth" are useless in Jungian psychology. The answer lies only in YOUR personal context.""",
+        
         "s2_label": "🔍 Stage 2: Dynamics",
-        "s2_help": "What did the symbol do in the dream? How did you feel?",
+        "s2_help": """[How to]
+1. Subjective Interpretation: Assume every character in the dream is a **Part of Me**, not the actual person. (e.g., Angry Boss = My internal oppressive self)
+2. Identify the 'Power Dynamics' and conflicts between these parts within you.
+
+⚠️ Critique:
+No Projection: Do not blame the external person ("That boss is bad"). Acknowledge that the dream is 95% about your own inner story.""",
+        
         "analyze_btn": "▼ Run Master Analysis (ENTER)",
+        
         "s3_label": "🏛️ Stage 3: Interpretation",
+        
         "s4_label": "💎 Stage 4: Ritual",
-        "s4_help": "Concrete action to bring dream energy into reality.",
+        "s4_help": """[How to]
+Perform a concrete action to Honor the message.
+- Did the dream ask for 'Rest'? -> Actually sit and do nothing for an hour.
+- Did it show 'Wildness'? -> Walk in the woods or shout out loud.
+
+⚠️ Critique:
+Avoid Intellectual Games: Thinking alone is not enough. You must move your body to complete the ritual.""",
+        
         "mint_btn": "💎 Mint Token",
         "update_btn": "🏛️ Update Asset",
         "success_msg": "🎉 Minting Successful!",
@@ -140,37 +198,28 @@ LANG = {
     }
 }
 
-# --- CSS: 디자인 (사이드바 숨김 문제 해결!) ---
+# --- CSS: 디자인 ---
 st.markdown("""
     <style>
-    /* 전체 배경 */
     .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
     
-    /* 🔴 [복구] 사이드바 버튼을 가리던 CSS를 모두 제거했습니다. */
-    /* 이제 상단 바와 사이드바 버튼이 정상적으로 보입니다. */
+    /* 개발자 도구만 숨김 */
+    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
+    footer { visibility: hidden !important; display: none !important; }
     
-    /* 확장 메뉴 헤더 */
     .streamlit-expanderHeader p { color: #FFFFFF !important; font-weight: bold !important; font-size: 1.1em !important; }
     .streamlit-expanderHeader:hover p { color: #D4AF37 !important; } 
     
-    /* 버튼 스타일 */
     button { background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important; background-color: #D4AF37 !important; border: none !important; opacity: 1 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important; padding: 0.5rem 1rem !important; border-radius: 0.5rem !important; }
     button p, button div, button span { color: #000000 !important; font-weight: 900 !important; font-size: 1rem !important; }
     button:hover { background: #FFD700 !important; transform: scale(1.02); }
-    
-    /* 입력창 스타일 */
     .stTextArea textarea, .stTextInput input { background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important; }
     label, .stMarkdown label, p, .stMetricLabel { color: #E0E0E0 !important; }
     .stMetricValue { color: #D4AF37 !important; }
-    
-    /* 박스 컨테이너 */
     div[data-testid="column"] { background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px; }
-    
-    /* 툴팁 */
     div[data-baseweb="popover"], div[data-baseweb="tooltip"] { background-color: #1A1A1A !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important; max-width: 400px !important; }
     div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
     
-    /* 제목 및 텍스트 스타일 */
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
     .defi-desc-box { background-color: #111111 !important; padding: 30px !important; border-radius: 15px !important; border: 1px solid #333 !important; margin-top: 30px; margin-bottom: 30px; }
@@ -185,7 +234,7 @@ if 'access_granted' not in st.session_state: st.session_state.access_granted = F
 if 'user_id' not in st.session_state: st.session_state.user_id = None
 if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
-if 'language' not in st.session_state: st.session_state.language = "KO"
+# if 'language' ... (이미 위에서 처리함)
 if 'is_admin_unlocked' not in st.session_state: st.session_state.is_admin_unlocked = False 
 
 for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
@@ -198,12 +247,6 @@ try:
     key = st.secrets["SUPABASE_KEY"]
     supabase: Client = create_client(url, key)
 except: st.error("DB Connection Error")
-
-with st.sidebar:
-    lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
-    if lang_choice != st.session_state.language:
-        st.session_state.language = lang_choice
-        st.rerun()
 
 T = LANG[st.session_state.language]
 
