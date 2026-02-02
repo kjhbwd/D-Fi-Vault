@@ -6,17 +6,10 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-# 사이드바 강제 확장 (펼쳐진 상태로 시작)
-st.set_page_config(page_title="D-Fi Vault v13.8", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="D-Fi Vault v13.9", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
-# 🟢 [CORE FIX] 언어 설정을 맨 위로 올림 (로그인 전에도 보임)
+# 🟢 [CORE] 언어 설정 초기화
 if 'language' not in st.session_state: st.session_state.language = "KO"
-
-with st.sidebar:
-    lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
-    if lang_choice != st.session_state.language:
-        st.session_state.language = lang_choice
-        st.rerun()
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -30,7 +23,7 @@ MAX_SUPPLY = 21000000
 HALVING_STEP = 2100000
 
 # ==========================================
-# 🌐 [LANGUAGE PACK] - 상세 가이드 탑재 완료
+# 🌐 [LANGUAGE PACK]
 # ==========================================
 LANG = {
     "KO": {
@@ -69,7 +62,7 @@ LANG = {
         "delete_btn": "🗑️ 삭제 (Delete)",
         "right_title": "🏛️ D-Fi 연금술",
         
-        # 👇 [수정] 빌더님의 상세 가이드 적용 (KO)
+        # 상세 가이드 (KO)
         "s1_label": "🚀 Stage 1: 연상 (Association)",
         "s1_help": """[수행 방법]
 1. 꿈을 '이미지' 단위로 쪼갭니다.
@@ -88,10 +81,7 @@ LANG = {
 외부 투사 금지: "저 상사가 나쁜 놈이네"라며 남 탓으로 돌리면 실패입니다. 꿈은 95% 이상이 나 자신의 이야기임을 인정해야 합니다.""",
         
         "analyze_btn": "▼ 마스터 해석 가동 (ENTER)",
-        
         "s3_label": "🏛️ Stage 3: 해석 (Interpretation)",
-        # 해석은 결과창이므로 툴팁 대신 결과 텍스트에 포함되지만, UI 통일성을 위해 라벨은 유지
-        
         "s4_label": "💎 Stage 4: 의례 (Ritual)",
         "s4_help": """[수행 방법]
 해석된 메시지를 기리기(Honor) 위한 구체적인 행동을 합니다.
@@ -151,7 +141,7 @@ LANG = {
         "delete_btn": "🗑️ Delete",
         "right_title": "🏛️ D-Fi Alchemy",
         
-        # 👇 [수정] 영문판 상세 가이드 (번역 적용)
+        # 상세 가이드 (EN)
         "s1_label": "🚀 Stage 1: Association",
         "s1_help": """[How to]
 1. Break the dream down into 'Images'.
@@ -170,9 +160,7 @@ No Dream Dictionaries: Standard interpretations like "Snake = Wealth" are useles
 No Projection: Do not blame the external person ("That boss is bad"). Acknowledge that the dream is 95% about your own inner story.""",
         
         "analyze_btn": "▼ Run Master Analysis (ENTER)",
-        
         "s3_label": "🏛️ Stage 3: Interpretation",
-        
         "s4_label": "💎 Stage 4: Ritual",
         "s4_help": """[How to]
 Perform a concrete action to Honor the message.
@@ -198,27 +186,35 @@ Avoid Intellectual Games: Thinking alone is not enough. You must move your body 
     }
 }
 
-# --- CSS: 디자인 ---
+# --- CSS: 디자인 (헤더/사이드바 블랙 통일 + 가독성 확보) ---
 st.markdown("""
     <style>
+    /* 1. 전체 배경 및 텍스트 */
     .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
     
-    /* 개발자 도구만 숨김 */
+    /* 2. 상단 헤더 강제 블랙 (흰색 막대 제거) */
+    header { background-color: #050505 !important; }
+    
+    /* 3. 사이드바 강제 다크모드 (흰색 배경 제거) */
+    [data-testid="stSidebar"] { background-color: #111111 !important; border-right: 1px solid #333 !important; }
+    
+    /* 4. 개발자 도구 숨김 (메뉴 버튼은 유지) */
     [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
     
+    /* 5. 텍스트 및 버튼 스타일 */
     .streamlit-expanderHeader p { color: #FFFFFF !important; font-weight: bold !important; font-size: 1.1em !important; }
     .streamlit-expanderHeader:hover p { color: #D4AF37 !important; } 
     
     button { background: linear-gradient(90deg, #D4AF37 0%, #FDB931 100%) !important; background-color: #D4AF37 !important; border: none !important; opacity: 1 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important; padding: 0.5rem 1rem !important; border-radius: 0.5rem !important; }
     button p, button div, button span { color: #000000 !important; font-weight: 900 !important; font-size: 1rem !important; }
     button:hover { background: #FFD700 !important; transform: scale(1.02); }
+    
     .stTextArea textarea, .stTextInput input { background-color: #0A0A0A !important; color: #FFFFFF !important; border: 1px solid #666666 !important; }
     label, .stMarkdown label, p, .stMetricLabel { color: #E0E0E0 !important; }
     .stMetricValue { color: #D4AF37 !important; }
+    
     div[data-testid="column"] { background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px; }
-    div[data-baseweb="popover"], div[data-baseweb="tooltip"] { background-color: #1A1A1A !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important; max-width: 400px !important; }
-    div[data-baseweb="popover"] > div, div[data-baseweb="tooltip"] > div { color: #FFFFFF !important; background-color: #1A1A1A !important; }
     
     .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
@@ -234,7 +230,7 @@ if 'access_granted' not in st.session_state: st.session_state.access_granted = F
 if 'user_id' not in st.session_state: st.session_state.user_id = None
 if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
-# if 'language' ... (이미 위에서 처리함)
+# if 'language' ... (위에서 처리됨)
 if 'is_admin_unlocked' not in st.session_state: st.session_state.is_admin_unlocked = False 
 
 for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
@@ -248,8 +244,24 @@ try:
     supabase: Client = create_client(url, key)
 except: st.error("DB Connection Error")
 
+# 🟢 [CORE LAYOUT] 언어 설정 위치 분기
+# 로그인 전(Manifesto)에는 화면 중앙 상단에 표시 / 로그인 후에는 사이드바에 표시
+if not st.session_state.access_granted:
+    # 로그인 전: 메인 화면 상단
+    lang_col1, lang_col2, lang_col3 = st.columns([8, 2, 1])
+    with lang_col2:
+        st.session_state.language = st.radio("Language", ["KO", "EN"], horizontal=True, label_visibility="collapsed")
+else:
+    # 로그인 후: 사이드바 (기존 유지)
+    with st.sidebar:
+        lang_choice = st.radio("Language / 언어", ["KO", "EN"], horizontal=True)
+        if lang_choice != st.session_state.language:
+            st.session_state.language = lang_choice
+            st.rerun()
+
 T = LANG[st.session_state.language]
 
+# ... (Analysis, Calculation, Ledger Functions same as before) ...
 def analyze_dream_engine_v2(context, symbol, dynamics, lang="KO"):
     keywords = {
         "옷": "persona", "clothes": "persona", "uniform": "persona", "mask": "persona", "가면": "persona",
