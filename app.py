@@ -6,7 +6,7 @@ import random
 import pandas as pd
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="D-Fi Vault v13.4", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="D-Fi Vault v13.4", page_icon="🏛️", layout="wide" initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
