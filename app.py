@@ -252,6 +252,9 @@ def get_ledger_data():
 # 🛡️ [SECURITY] 관리자 메뉴 (이중 잠금)
 # 👇 여기가 중요합니다! ADMIN_USER와 현재 로그인한 ID가 정확히 일치해야 버튼이 보입니다.
 if st.session_state.access_granted and st.session_state.user_id:
+    with st.sidebar:
+        st.write(f"현재 인식된 ID: '{st.session_state.user_id}'")
+        st.write(f"관리자 설정 ID: '{ADMIN_USER}'")
     if st.session_state.user_id == ADMIN_USER: 
         with st.sidebar:
             st.markdown("---")
