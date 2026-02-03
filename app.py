@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v22.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v23.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -320,7 +320,7 @@ if not st.session_state.access_granted:
         st.markdown(f"<div class='main-title'>{T['title']}</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='quote-box'>{T['manifesto_quote']}</div>", unsafe_allow_html=True)
         
-        # [NEW] 비전 멘트가 추가된 설명 박스
+        # [NEW] 비전 멘트가 추가된 설명 박스 (정렬 보정 적용됨)
         st.markdown(f"""<div class='defi-desc-box'>
     <div class='defi-desc-text'>
         <span class='highlight-gold'>{T['tokenomics']}</span>
@@ -330,9 +330,9 @@ if not st.session_state.access_granted:
         <p><span class='highlight-bold'>{T['desc_2_title']}</span><br>
         {T['desc_2_text']}</p>
         <hr style='border-color: #333; margin: 20px 0;'>
-        <p style='font-style: italic; color: #888; font-size: 0.9em; text-align: center;'>
-            "어쩌면, 무의식의 연금술로 삶이 바뀐 선구자들이 자발적으로 이 생태계에 씨앗(Fund)을 뿌릴지도 모릅니다.<br>
-            그 후원금이 모인다면, 당신의 Dream Pts는 언젠가 현실의 재화로 '바이백(Buy-back)' 되어 돌아올 수도 있겠죠.<br>
+        <p style='font-style: italic; color: #888; font-size: 0.9em; text-align: center; line-height: 1.6; word-break: keep-all;'>
+            "어쩌면, 무의식의 연금술로 삶이 바뀐 선구자들이 자발적으로 이 생태계에 씨앗(Fund)을 뿌릴지도 모릅니다.
+            그 후원금이 모인다면, 당신의 Dream Pts는 언젠가 현실의 재화로 '바이백(Buy-back)' 되어 돌아올 수도 있겠죠.
             마치 꿈이 현실이 되는 그날처럼 말입니다."
         </p>
     </div>
