@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v20.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v21.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -154,7 +154,7 @@ LANG = {
         "burn_success": "✅ 정산 완료! 모든 포인트가 소각되었습니다.",
         "admin_unlock": "🔒 Admin Unlock",
         "master_key_ph": "Enter Master Key",
-        "reg_dreamers": "Registered Dreamers"
+        "reg_dreamers": "Dreamers"
     },
     "EN": {
         "title": "Dream-Fi : Alchemy of the Unconscious",
@@ -341,8 +341,7 @@ if not st.session_state.access_granted:
                     st.rerun()
                 else: st.error(T['login_error'])
         
-        user_count = get_user_count()
-        st.markdown(f"<div style='text-align:center; font-family:Cinzel; color:#D4AF37; margin-top:20px;'>✨ {T['reg_dreamers']} : {user_count:,}</div>", unsafe_allow_html=True)
+        # [수정됨] 1차 관문에서는 Dreamers 숫자 삭제 (Secret Strategy)
     st.stop()
 
 # ==========================================
@@ -443,7 +442,7 @@ def get_global_status(current_user):
         my_total = 0
         my_count = 0
         global_mined = 0
-        if res_all.data:
+        if res.data:
             for d in res_all.data:
                 score = 0
                 meaning = d.get('meaning', "")
@@ -485,6 +484,7 @@ with c_header_2:
             st.session_state.language = lang_dash
             st.rerun()
     with sub_c2:
+        # [수정됨] 내부자(로그인 후)에게만 Dreamers 숫자 공개
         st.markdown(f"<div class='dreamer-count-header'>✨ Dreamers: {user_count:,}</div>", unsafe_allow_html=True)
 
 # 글로벌 공급량 바
@@ -589,7 +589,6 @@ with col_left:
     with st.form("left_form"):
         status = T['status_edit'] if st.session_state.current_dream_id else T['status_new']
         st.caption(status)
-        # 📌 1. [UI 개선] 왼쪽 입력창 높이 증가 (450 -> 680)
         dream_raw = st.text_area("Dream Content", value=st.session_state.dream_context, height=680, help="스크롤하여 긴 내용을 확인하세요.")
         c1, c2 = st.columns(2)
         with c1:
@@ -647,7 +646,6 @@ with col_right:
         if st.session_state.is_minted and st.session_state.existing_value: 
             st.info(f"📉 Prev Value: {st.session_state.existing_value}")
         
-        # 📌 2. [UI 개선] 4단계 입력창을 text_area로 변경
         st.text_area("Enter Ritual Action", key="s4_val", height=100, label_visibility="collapsed")
         
         final_btn = T['update_btn'] if st.session_state.is_minted else T['mint_btn']
