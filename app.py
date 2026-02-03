@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v23.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v24.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -288,7 +288,8 @@ def get_today_mined_count(user_id):
         now_kst = datetime.datetime.now(KST)
         start_of_day = now_kst.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
         
-        res = supabase.table("dreams").select("meaning").eq("user_id", user_id).gte("created_at", start_of_day).execute()
+        # [Fix] select("*")로 변경하여 유연성 확보
+        res = supabase.table("dreams").select("*").eq("user_id", user_id).gte("created_at", start_of_day).execute()
         
         today_total = 0
         if res.data:
@@ -320,7 +321,7 @@ if not st.session_state.access_granted:
         st.markdown(f"<div class='main-title'>{T['title']}</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='quote-box'>{T['manifesto_quote']}</div>", unsafe_allow_html=True)
         
-        # [NEW] 비전 멘트가 추가된 설명 박스 (정렬 보정 적용됨)
+        # [NEW] 비전 멘트 (정렬 보정 적용)
         st.markdown(f"""<div class='defi-desc-box'>
     <div class='defi-desc-text'>
         <span class='highlight-gold'>{T['tokenomics']}</span>
@@ -348,7 +349,7 @@ if not st.session_state.access_granted:
                     st.rerun()
                 else: st.error(T['login_error'])
         
-        # 1차 관문에서는 Dreamers 숫자 삭제 (Secret Strategy)
+        # 1차 관문에서는 Dreamers 숫자 삭제
     st.stop()
 
 # ==========================================
@@ -414,11 +415,13 @@ user_count = get_user_count()
 
 def get_ledger_data():
     try:
-        res_all = supabase.table("dreams").select("user_id, meaning, is_burned").execute()
+        # [Fix] select("*")로 변경
+        res_all = supabase.table("dreams").select("*").execute()
         ledger = {} 
         if res_all.data:
             for d in res_all.data:
-                if d.get('is_burned') is True: continue
+                # 안전한 get 처리 (컬럼이 없으면 False로 취급)
+                if d.get('is_burned', False) is True: continue
                 uid = d['user_id']
                 meaning = d.get('meaning', "")
                 score = 0
@@ -445,11 +448,12 @@ def get_ledger_data():
 
 def get_global_status(current_user):
     try:
-        res_all = supabase.table("dreams").select("meaning, user_id, is_burned").execute()
+        # [Fix] select("*")로 변경하여 컬럼 부재 에러 방지
+        res_all = supabase.table("dreams").select("*").execute()
         my_total = 0
         my_count = 0
         global_mined = 0
-        if res.data:
+        if res_all.data:
             for d in res_all.data:
                 score = 0
                 meaning = d.get('meaning', "")
@@ -462,7 +466,10 @@ def get_global_status(current_user):
                     except: pass
                 
                 global_mined += score 
-                if d['user_id'] == current_user and d.get('is_burned') is not True:
+                
+                # 안전한 get 처리
+                is_burned_val = d.get('is_burned', False)
+                if d['user_id'] == current_user and is_burned_val is not True:
                     my_total += score
                     my_count += 1
         
@@ -563,7 +570,7 @@ col_left, col_right = st.columns(2)
 
 with col_left:
     st.markdown(f"### {T['left_title']}")
-    # 📌 꿈 불러오기 로직 (수정됨: 3, 4단계도 DB에서 불러와서 세션에 저장)
+    # 📌 꿈 불러오기 로직
     with st.expander(T['load_dreams'], expanded=False):
         try:
             res = supabase.table("dreams").select("*").eq("user_id", st.session_state.user_id).order("created_at", desc=True).limit(5).execute()
