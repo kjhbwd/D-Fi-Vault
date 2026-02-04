@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v24.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v25.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -24,6 +24,44 @@ DAILY_CAP = 10000 # 하루 채굴 한도
 # 🟢 [CORE] 언어 및 시간 설정
 if 'language' not in st.session_state: st.session_state.language = "KO"
 KST = pytz.timezone('Asia/Seoul')
+
+# ==========================================
+# 📜 [WHITE PAPER] - 백서 내용 (Ver 1.1)
+# ==========================================
+WHITE_PAPER_TEXT = """
+### 📜 Dream-Fi White Paper (Ver 1.1)
+#### : The Alchemy of the Unconscious (무의식의 연금술)
+
+---
+
+#### 1. 서문 (Problem Statement)
+"현실의 결핍은 무의식의 풍요로 채워져야 한다."
+현대인은 생존 경쟁에 매몰되어 자신의 잠재력을 잊고 살아갑니다. Dream-Fi는 매일 밤 버려지는 무의식(꿈)을 채굴하고 자산화하여, 평범한 개인이 자신의 운명을 바꾸는 퀀텀 점프(Quantum Jump)를 지원합니다.
+
+#### 2. 솔루션 & 기술 (Methodology)
+우리는 로버트 존슨의 4단계 프로토콜(4-Step Protocol)을 통해 무형의 꿈을 유형의 자산(Block)으로 변환합니다.
+1. **연상 (Association):** 이미지의 직관적 연결.
+2. **역학 (Dynamics):** 내면 인격들과의 대화.
+3. **해석 (Interpretation):** 무의식의 메시지 해독.
+4. **의례 (Ritual):** 깨달음을 현실의 구체적 행동으로 옮기는 행동 증명(Proof of Action).
+
+#### 3. 토크노믹스 (Tokenomics)
+비트코인 모델을 차용하여 내면 자산의 가치를 보존합니다.
+* **총 발행량:** 21,000,000 Pts (희소성 확보)
+* **반감기:** 2,100,000 Pts 채굴 시마다 보상 감소
+* **일일 한도:** 10,000 Pts (무분별한 인플레이션 방지)
+
+#### 4. 로드맵 및 비전 (Roadmap & Ecosystem)
+Dream-Fi의 궁극적인 목표는 단순한 기록 저장소가 아닌, 실질적인 부(Wealth)의 창출과 순환입니다.
+
+* **비즈니스 인큐베이팅 (From Dream to Business):**
+SNS 광고 수익은 기초적인 단계일 뿐입니다. 우리는 꿈에서 얻은 창의적인 영감과 아이디어를 실제 사업 모델과 비즈니스로 연결합니다. 무의식의 통찰이 구체적인 제품과 서비스가 되어, 유저가 진정한 경제적 자유를 얻도록 돕습니다.
+
+* **자발적 기여와 바이백 (Virtuous Cycle of Buy-back):**
+이 시스템을 통해 사업적으로 성공하고 경제적 자유를 얻은 선구자들은 자발적으로 생태계에 기여하게 됩니다. 이렇게 조성된 생태계 후원금(Ecosystem Fund)은 다시 커뮤니티로 환원되어, 유저들이 열심히 채굴한 Dream Pts를 현실의 재화로 매입(Buy-back)하는 재원으로 사용됩니다.
+
+결국 "꿈(채굴) → 사업화(성공) → 후원(펀드 조성) → 바이백(현금화)"이라는 완벽한 가치 순환 구조가 완성됩니다.
+"""
 
 # ==========================================
 # 📚 [CONTENT PACK] - 가이드 텍스트
@@ -338,6 +376,10 @@ if not st.session_state.access_granted:
         </p>
     </div>
 </div>""", unsafe_allow_html=True)
+        
+        # 📌 [NEW] 백서 보기 버튼 추가
+        with st.expander("📜 Dream-Fi White Paper (백서 읽기)"):
+            st.markdown(WHITE_PAPER_TEXT)
         
         with st.form("gate_form"):
             input_code = st.text_input("Entry Code", type="password", placeholder=T['login_placeholder'])
