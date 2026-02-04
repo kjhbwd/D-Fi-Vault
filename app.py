@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v25.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v26.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -165,7 +165,10 @@ LANG = {
         "reset_btn": "🔄 새로 쓰기 (Reset)",
         "status_edit": "📝 수정 모드",
         "status_new": "✨ 신규 작성 모드",
-        "save_btn": "💾 임시 저장 (Save Draft)",
+        
+        # 📌 [수정] 버튼 이름 변경
+        "save_btn": "💾 꿈 내용 저장 (Save Dream)",
+        
         "delete_btn": "🗑️ 삭제 (Delete)",
         "right_title": "🏛️ Dream-Fi 연금술 (4-Step)",
         
@@ -226,7 +229,10 @@ LANG = {
         "reset_btn": "Reset",
         "status_edit": "Edit Mode",
         "status_new": "New Entry",
-        "save_btn": "Save Draft",
+        
+        # 📌 [Update] Button Label
+        "save_btn": "💾 Save Dream Content",
+        
         "delete_btn": "Delete",
         "right_title": "🏛️ Dream-Fi Alchemy",
         
@@ -377,7 +383,7 @@ if not st.session_state.access_granted:
     </div>
 </div>""", unsafe_allow_html=True)
         
-        # 📌 [NEW] 백서 보기 버튼 추가
+        # 📌 백서 보기 버튼
         with st.expander("📜 Dream-Fi White Paper (백서 읽기)"):
             st.markdown(WHITE_PAPER_TEXT)
         
@@ -707,66 +713,71 @@ with col_right:
         final_btn = T['update_btn'] if st.session_state.is_minted else T['mint_btn']
         
         if st.form_submit_button(final_btn):
-            # 빈칸 정밀 체크
-            errors = []
-            if not st.session_state.dream_context: errors.append("꿈 내용(왼쪽)")
-            if not st.session_state.s1_val: errors.append("1단계(연상)")
-            if not st.session_state.s2_val: errors.append("2단계(역학)")
-            if not st.session_state.s3_val: errors.append("3단계(해석)")
-            if not st.session_state.s4_val: errors.append("4단계(의례)")
-            
-            if not errors:
-                # 한도 체크
-                if daily_remaining <= 0:
-                    st.error("🛑 오늘의 채굴 한도(10,000 Pts)를 모두 소진했습니다. 내일 다시 시도하세요!")
-                else:
-                    # 기본 점수 계산
-                    base_score_raw = 1000 + (len(st.session_state.dream_context) * 2) + \
-                                     (len(st.session_state.s1_val) * 5) + \
-                                     (len(st.session_state.s2_val) * 5) + \
-                                     (len(st.session_state.s3_val) * 5) + \
-                                     (len(st.session_state.s4_val) * 10)
-                    
-                    # 보너스 및 한도 적용
-                    early_bonus = 1.5 if is_early_bird else 1.0
-                    calculated_score = int(base_score_raw * mining_multiplier * early_bonus)
-                    
-                    # 최종 점수는 남은 한도를 넘을 수 없음
-                    final_score = min(calculated_score, daily_remaining)
-                    
-                    new_val_str = f"Value: {final_score:,} Dream Pts"
-                    
-                    payload = {
-                        "symbol": st.session_state.s1_val, 
-                        "block": st.session_state.s2_val, 
-                        "analysis": st.session_state.s3_val,
-                        "ritual_self": st.session_state.s4_val, 
-                        "meaning": new_val_str
-                    }
-                    
-                    if st.session_state.current_dream_id:
-                        supabase.table("dreams").update(payload).eq("id", st.session_state.current_dream_id).eq("user_id", st.session_state.user_id).execute()
-                    else:
-                        payload["context"] = st.session_state.dream_context
-                        payload["user_id"] = st.session_state.user_id
-                        data = supabase.table("dreams").insert(payload).execute()
-                        if data.data: st.session_state.current_dream_id = data.data[0]['id']
-                    
-                    st.session_state.is_minted = True
-                    st.session_state.existing_value = new_val_str 
-                    
-                    st.balloons()
-                    msg = st.empty()
-                    
-                    bonus_text = f"(Early Bird x1.5)" if is_early_bird else ""
-                    msg.markdown(f"""
-                    <div style="background-color:#D4AF37; padding:20px; border-radius:10px; text-align:center; border:2px solid #FFFFFF;">
-                        <h2 style='color:black; margin:0;'>{T['success_msg']}</h2>
-                        <h3 style='color:black; margin:10px 0;'>💎 +{final_score:,} Dream Pts</h3>
-                        <p style='color:black;'>Halving x{mining_multiplier} {bonus_text}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    time.sleep(3) 
-                    st.rerun()
+            # 📌 [수정] 자산 업데이트 전, 꿈 내용 저장 여부 확인 (Safety Check)
+            if not st.session_state.current_dream_id:
+                st.error("⚠️ 왼쪽의 [꿈 내용 저장] 버튼을 먼저 눌러 내용을 확정해주세요!")
             else:
-                st.error(f"⚠️ 채굴 실패: {', '.join(errors)}이(가) 비어있습니다.")
+                # 빈칸 정밀 체크
+                errors = []
+                if not st.session_state.dream_context: errors.append("꿈 내용(왼쪽)")
+                if not st.session_state.s1_val: errors.append("1단계(연상)")
+                if not st.session_state.s2_val: errors.append("2단계(역학)")
+                if not st.session_state.s3_val: errors.append("3단계(해석)")
+                if not st.session_state.s4_val: errors.append("4단계(의례)")
+                
+                if not errors:
+                    # 한도 체크
+                    if daily_remaining <= 0:
+                        st.error("🛑 오늘의 채굴 한도(10,000 Pts)를 모두 소진했습니다. 내일 다시 시도하세요!")
+                    else:
+                        # 기본 점수 계산
+                        base_score_raw = 1000 + (len(st.session_state.dream_context) * 2) + \
+                                         (len(st.session_state.s1_val) * 5) + \
+                                         (len(st.session_state.s2_val) * 5) + \
+                                         (len(st.session_state.s3_val) * 5) + \
+                                         (len(st.session_state.s4_val) * 10)
+                        
+                        # 보너스 및 한도 적용
+                        early_bonus = 1.5 if is_early_bird else 1.0
+                        calculated_score = int(base_score_raw * mining_multiplier * early_bonus)
+                        
+                        # 최종 점수는 남은 한도를 넘을 수 없음
+                        final_score = min(calculated_score, daily_remaining)
+                        
+                        new_val_str = f"Value: {final_score:,} Dream Pts"
+                        
+                        payload = {
+                            "symbol": st.session_state.s1_val, 
+                            "block": st.session_state.s2_val, 
+                            "analysis": st.session_state.s3_val,
+                            "ritual_self": st.session_state.s4_val, 
+                            "meaning": new_val_str
+                        }
+                        
+                        if st.session_state.current_dream_id:
+                            supabase.table("dreams").update(payload).eq("id", st.session_state.current_dream_id).eq("user_id", st.session_state.user_id).execute()
+                        else:
+                            # 안전장치(위에서 걸러지지만 이중 방어)
+                            payload["context"] = st.session_state.dream_context
+                            payload["user_id"] = st.session_state.user_id
+                            data = supabase.table("dreams").insert(payload).execute()
+                            if data.data: st.session_state.current_dream_id = data.data[0]['id']
+                        
+                        st.session_state.is_minted = True
+                        st.session_state.existing_value = new_val_str 
+                        
+                        st.balloons()
+                        msg = st.empty()
+                        
+                        bonus_text = f"(Early Bird x1.5)" if is_early_bird else ""
+                        msg.markdown(f"""
+                        <div style="background-color:#D4AF37; padding:20px; border-radius:10px; text-align:center; border:2px solid #FFFFFF;">
+                            <h2 style='color:black; margin:0;'>{T['success_msg']}</h2>
+                            <h3 style='color:black; margin:10px 0;'>💎 +{final_score:,} Dream Pts</h3>
+                            <p style='color:black;'>Halving x{mining_multiplier} {bonus_text}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        time.sleep(3) 
+                        st.rerun()
+                else:
+                    st.error(f"⚠️ 채굴 실패: {', '.join(errors)}이(가) 비어있습니다.")
