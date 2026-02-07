@@ -7,7 +7,7 @@ import pandas as pd
 import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v26.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Dream-Fi Vault v27.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -66,7 +66,6 @@ SNS 광고 수익은 기초적인 단계일 뿐입니다. 우리는 꿈에서 �
 # ==========================================
 # 📚 [CONTENT PACK] - 가이드 텍스트
 # ==========================================
-
 GUIDE_S1_FULL = """
 **[실례 상황 설정]**
 꿈 내용: "나는 낡고 허름한 내 옛날 초등학교 교실에 앉아 있다. 칠판 앞에 검은 옷을 입은 낯선 남자가 서 있는데, 나에게 오래된 시계를 건네주며 '이걸 고치라'고 말한다. 나는 고칠 줄 몰라 당황한다."
@@ -165,23 +164,17 @@ LANG = {
         "reset_btn": "🔄 새로 쓰기 (Reset)",
         "status_edit": "📝 수정 모드",
         "status_new": "✨ 신규 작성 모드",
-        
-        # 📌 [수정] 버튼 이름 변경
         "save_btn": "💾 꿈 내용 저장 (Save Dream)",
-        
         "delete_btn": "🗑️ 삭제 (Delete)",
         "right_title": "🏛️ Dream-Fi 연금술 (4-Step)",
-        
         "guide_s1": GUIDE_S1_FULL,
         "guide_s2": GUIDE_S2_FULL,
         "guide_s3": GUIDE_S3_FULL,
         "guide_s4": GUIDE_S4_FULL,
-        
         "s1_label": "🚀 Stage 1: 연상 (Association)",
         "s2_label": "🔍 Stage 2: 역학 (Dynamics)",
         "s3_label": "🏛️ Stage 3: 해석 (Interpretation)",
         "s4_label": "💎 Stage 4: 의례 (Ritual)",
-        
         "mint_btn": "💎 최종 자산 발행 (Mint Token)",
         "update_btn": "🏛️ 자산 정보 업데이트",
         "success_msg": "🎉 채굴 성공! (Minted)",
@@ -229,23 +222,17 @@ LANG = {
         "reset_btn": "Reset",
         "status_edit": "Edit Mode",
         "status_new": "New Entry",
-        
-        # 📌 [Update] Button Label
         "save_btn": "💾 Save Dream Content",
-        
         "delete_btn": "Delete",
         "right_title": "🏛️ Dream-Fi Alchemy",
-        
         "guide_s1": "Please refer to the Korean guide for full context.",
         "guide_s2": "Please refer to the Korean guide for full context.",
         "guide_s3": "Please refer to the Korean guide for full context.",
         "guide_s4": "Please refer to the Korean guide for full context.",
-        
         "s1_label": "Stage 1: Association",
         "s2_label": "Stage 2: Dynamics",
         "s3_label": "Stage 3: Interpretation",
         "s4_label": "Stage 4: Ritual",
-        
         "mint_btn": "Mint Token",
         "update_btn": "Update Asset",
         "success_msg": "Minting Successful!",
@@ -263,16 +250,33 @@ LANG = {
     }
 }
 
-# --- CSS: 디자인 ---
+# --- CSS: 디자인 (모바일 최적화 & 로고 숨김 적용) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
     
-    .stApp, .stApp > header, .stApp > footer, .stApp > main { background-color: #050505 !important; color: #FFFFFF !important; }
-    header { background-color: #050505 !important; }
-    [data-testid="stSidebar"] { background-color: #111111 !important; border-right: 1px solid #333 !important; }
-    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
+    /* 1. 기본 배경 및 폰트 설정 */
+    .stApp, .stApp > header, .stApp > footer, .stApp > main { 
+        background-color: #050505 !important; 
+        color: #FFFFFF !important; 
+    }
+    
+    /* 2. [핵심] 한글 줄바꿈 최적화 (단어 단위 줄바꿈) */
+    p, div, span, label, h1, h2, h3, h4, h5, h6, li, button {
+        word-break: keep-all !important; 
+        overflow-wrap: break-word !important; 
+    }
+    
+    /* 3. [핵심] Streamlit 로고 및 푸터 완전히 숨기기 */
+    header { visibility: hidden !important; }
+    #MainMenu { visibility: hidden !important; }
     footer { visibility: hidden !important; display: none !important; }
+    div[data-testid="stToolbar"] { display: none !important; }
+    .stDeployButton { display: none !important; }
+    div[class*="viewerBadge"] { display: none !important; }
+
+    /* 4. UI 컴포넌트 스타일링 */
+    [data-testid="stSidebar"] { background-color: #111111 !important; border-right: 1px solid #333 !important; }
     
     .streamlit-expanderHeader { background-color: #1A1A1A !important; border-radius: 5px !important; border: 1px solid #333 !important; }
     .streamlit-expanderHeader p { color: #D4AF37 !important; font-weight: bold !important; font-size: 1.0em !important; }
@@ -295,7 +299,6 @@ st.markdown("""
     .highlight-gold { color: #FDB931 !important; font-weight: bold; font-size: 1.2em; margin-bottom: 15px; display: block; }
     .highlight-bold { color: #FFFFFF !important; font-weight: bold; }
     
-    /* 프로그레스 바 커스텀 */
     div[data-testid="stProgress"] > div > div { background-color: #D4AF37 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -326,13 +329,10 @@ def get_user_count():
         return count_res.count if count_res.count else 0
     except: return 0
 
-# 📅 오늘 내가 채굴한 총량 계산
 def get_today_mined_count(user_id):
     try:
         now_kst = datetime.datetime.now(KST)
         start_of_day = now_kst.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
-        
-        # [Fix] select("*")로 변경하여 유연성 확보
         res = supabase.table("dreams").select("*").eq("user_id", user_id).gte("created_at", start_of_day).execute()
         
         today_total = 0
@@ -365,7 +365,6 @@ if not st.session_state.access_granted:
         st.markdown(f"<div class='main-title'>{T['title']}</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='quote-box'>{T['manifesto_quote']}</div>", unsafe_allow_html=True)
         
-        # [NEW] 비전 멘트 (정렬 보정 적용)
         st.markdown(f"""<div class='defi-desc-box'>
     <div class='defi-desc-text'>
         <span class='highlight-gold'>{T['tokenomics']}</span>
@@ -383,7 +382,6 @@ if not st.session_state.access_granted:
     </div>
 </div>""", unsafe_allow_html=True)
         
-        # 📌 백서 보기 버튼
         with st.expander("📜 Dream-Fi White Paper (백서 읽기)"):
             st.markdown(WHITE_PAPER_TEXT)
         
@@ -396,8 +394,6 @@ if not st.session_state.access_granted:
                     time.sleep(0.5)
                     st.rerun()
                 else: st.error(T['login_error'])
-        
-        # 1차 관문에서는 Dreamers 숫자 삭제
     st.stop()
 
 # ==========================================
@@ -463,12 +459,10 @@ user_count = get_user_count()
 
 def get_ledger_data():
     try:
-        # [Fix] select("*")로 변경
         res_all = supabase.table("dreams").select("*").execute()
         ledger = {} 
         if res_all.data:
             for d in res_all.data:
-                # 안전한 get 처리 (컬럼이 없으면 False로 취급)
                 if d.get('is_burned', False) is True: continue
                 uid = d['user_id']
                 meaning = d.get('meaning', "")
@@ -496,7 +490,6 @@ def get_ledger_data():
 
 def get_global_status(current_user):
     try:
-        # [Fix] select("*")로 변경하여 컬럼 부재 에러 방지
         res_all = supabase.table("dreams").select("*").execute()
         my_total = 0
         my_count = 0
@@ -514,8 +507,6 @@ def get_global_status(current_user):
                     except: pass
                 
                 global_mined += score 
-                
-                # 안전한 get 처리
                 is_burned_val = d.get('is_burned', False)
                 if d['user_id'] == current_user and is_burned_val is not True:
                     my_total += score
@@ -529,12 +520,10 @@ def get_global_status(current_user):
 my_assets, my_mining_count, global_supply, mining_multiplier, current_era = get_global_status(st.session_state.user_id)
 supply_progress = min(1.0, global_supply / MAX_SUPPLY)
 
-# 📊 오늘 채굴량 확인
 today_mined = get_today_mined_count(st.session_state.user_id)
 daily_remaining = max(0, DAILY_CAP - today_mined)
 daily_progress = min(1.0, today_mined / DAILY_CAP)
 
-# 상단 헤더
 c_header_1, c_header_2 = st.columns([7, 3])
 with c_header_1:
     st.markdown(f"### 🪙 {T['dash_global']} (Era: {current_era + 1})")
@@ -546,10 +535,8 @@ with c_header_2:
             st.session_state.language = lang_dash
             st.rerun()
     with sub_c2:
-        # 내부자에게만 Dreamers 숫자 공개
         st.markdown(f"<div class='dreamer-count-header'>✨ Dreamers: {user_count:,}</div>", unsafe_allow_html=True)
 
-# 글로벌 공급량 바
 st.progress(supply_progress)
 c_d1, c_d2, c_d3, c_d4 = st.columns(4)
 with c_d1: st.metric(T['dash_global'], f"{global_supply:,} / {MAX_SUPPLY:,}", delta=f"{supply_progress*100:.2f}%")
@@ -560,7 +547,6 @@ with c_d4:
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 
-# 일일 에너지 게이지 표시
 st.markdown("---")
 st.markdown(f"**⚡ Daily Mining Energy** ({today_mined:,} / {DAILY_CAP:,} Pts)")
 st.progress(daily_progress)
@@ -618,7 +604,6 @@ col_left, col_right = st.columns(2)
 
 with col_left:
     st.markdown(f"### {T['left_title']}")
-    # 📌 꿈 불러오기 로직
     with st.expander(T['load_dreams'], expanded=False):
         try:
             res = supabase.table("dreams").select("*").eq("user_id", st.session_state.user_id).order("created_at", desc=True).limit(5).execute()
@@ -629,7 +614,6 @@ with col_left:
                         if st.button(T['load_btn'], key=f"L_{d['id']}"):
                             st.session_state.current_dream_id = d['id']
                             st.session_state.dream_context = d.get('context', "")
-                            # 여기서 1~4단계를 모두 로드하여 입력창에 넣음
                             st.session_state.s1_val = d.get('symbol', "")
                             st.session_state.s2_val = d.get('block', "")
                             st.session_state.s3_val = d.get('analysis', "") 
@@ -674,7 +658,6 @@ with col_left:
                     st.rerun()
 
 with col_right:
-    # Early Bird 체크 (새벽 4시 ~ 8시)
     now_hour = datetime.datetime.now(KST).hour
     is_early_bird = 4 <= now_hour < 8
     
@@ -686,22 +669,18 @@ with col_right:
         st.markdown("#### ☕ Standard Mode (x1.0)")
     
     with st.form("mint_form"):
-        # 1단계
         with st.expander(f"💡 {T['s1_label']} (가이드 보기)"):
             st.markdown(T['guide_s1'])
         st.text_area("Enter Associations", key="s1_val", height=120, label_visibility="collapsed")
 
-        # 2단계
         with st.expander(f"💡 {T['s2_label']} (가이드 보기)"):
             st.markdown(T['guide_s2'])
         st.text_area("Enter Dynamics", key="s2_val", height=120, label_visibility="collapsed")
 
-        # 3단계
         with st.expander(f"💡 {T['s3_label']} (가이드 보기)"):
             st.markdown(T['guide_s3'])
         st.text_area("Enter Interpretation", key="s3_val", height=150, label_visibility="collapsed")
 
-        # 4단계
         with st.expander(f"💡 {T['s4_label']} (가이드 보기)"):
             st.markdown(T['guide_s4'])
         
@@ -713,11 +692,9 @@ with col_right:
         final_btn = T['update_btn'] if st.session_state.is_minted else T['mint_btn']
         
         if st.form_submit_button(final_btn):
-            # 📌 [수정] 자산 업데이트 전, 꿈 내용 저장 여부 확인 (Safety Check)
             if not st.session_state.current_dream_id:
                 st.error("⚠️ 왼쪽의 [꿈 내용 저장] 버튼을 먼저 눌러 내용을 확정해주세요!")
             else:
-                # 빈칸 정밀 체크
                 errors = []
                 if not st.session_state.dream_context: errors.append("꿈 내용(왼쪽)")
                 if not st.session_state.s1_val: errors.append("1단계(연상)")
@@ -726,22 +703,17 @@ with col_right:
                 if not st.session_state.s4_val: errors.append("4단계(의례)")
                 
                 if not errors:
-                    # 한도 체크
                     if daily_remaining <= 0:
                         st.error("🛑 오늘의 채굴 한도(10,000 Pts)를 모두 소진했습니다. 내일 다시 시도하세요!")
                     else:
-                        # 기본 점수 계산
                         base_score_raw = 1000 + (len(st.session_state.dream_context) * 2) + \
                                          (len(st.session_state.s1_val) * 5) + \
                                          (len(st.session_state.s2_val) * 5) + \
                                          (len(st.session_state.s3_val) * 5) + \
                                          (len(st.session_state.s4_val) * 10)
                         
-                        # 보너스 및 한도 적용
                         early_bonus = 1.5 if is_early_bird else 1.0
                         calculated_score = int(base_score_raw * mining_multiplier * early_bonus)
-                        
-                        # 최종 점수는 남은 한도를 넘을 수 없음
                         final_score = min(calculated_score, daily_remaining)
                         
                         new_val_str = f"Value: {final_score:,} Dream Pts"
@@ -757,7 +729,6 @@ with col_right:
                         if st.session_state.current_dream_id:
                             supabase.table("dreams").update(payload).eq("id", st.session_state.current_dream_id).eq("user_id", st.session_state.user_id).execute()
                         else:
-                            # 안전장치(위에서 걸러지지만 이중 방어)
                             payload["context"] = st.session_state.dream_context
                             payload["user_id"] = st.session_state.user_id
                             data = supabase.table("dreams").insert(payload).execute()
