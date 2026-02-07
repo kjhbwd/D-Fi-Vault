@@ -8,7 +8,7 @@ import pytz
 
 # [SYSTEM CONFIG]
 st.set_page_config(
-    page_title="Dream-Fi Vault v27.3", 
+    page_title="Dream-Fi Vault v27.4", 
     page_icon="🏛️", 
     layout="wide", 
     initial_sidebar_state="collapsed"
@@ -130,28 +130,28 @@ LANG = {
         "save_btn": "💾 꿈 내용 저장 (Save Dream)",
         "delete_btn": "🗑️ 삭제 (Delete)",
         "right_title": "🏛️ Dream-Fi 연금술 (4-Step)",
-        "guide_s1": GUIDE_S1_FULL,
-        "guide_s2": GUIDE_S2_FULL,
-        "guide_s3": GUIDE_S3_FULL,
-        "guide_s4": GUIDE_S4_FULL,
-        "s1_label": "🚀 Stage 1: 연상 (Association)",
-        "s2_label": "🔍 Stage 2: 역학 (Dynamics)",
-        "s3_label": "🏛️ Stage 3: 해석 (Interpretation)",
-        "s4_label": "💎 Stage 4: 의례 (Ritual)",
-        "mint_btn": "💎 최종 자산 발행 (Mint Token)",
-        "update_btn": "🏛️ 자산 정보 업데이트",
-        "success_msg": "🎉 채굴 성공! (Minted)",
-        "mined_value": "채굴된 가치",
-        "bonus_msg": "현재 반감기 보너스",
-        "ledger_title": "📊 Dream-Fi 투명 장부 (Ledger)",
-        "ledger_desc": "모든 유저의 활성 자산 현황입니다. (소각된 자산 제외)",
-        "burn_title": "🔥 자산 소각 (Buy-back)",
-        "burn_desc": "보유한 자산을 현금화(바이백)하고 소각합니다.",
-        "burn_btn": "💸 정산 및 소각 신청",
-        "burn_success": "✅ 정산 완료! 모든 포인트가 소각되었습니다.",
-        "admin_unlock": "🔒 Admin Unlock",
-        "master_key_ph": "Enter Master Key",
-        "reg_dreamers": "Registered Dreamers"
+        "guide_s1": "Context hidden.",
+        "guide_s2": "Context hidden.",
+        "guide_s3": "Context hidden.",
+        "guide_s4": "Context hidden.",
+        "s1_label": "Stage 1: Association",
+        "s2_label": "Stage 2: Dynamics",
+        "s3_label": "Stage 3: Interpretation",
+        "s4_label": "Stage 4: Ritual",
+        "mint_btn": "Mint Token",
+        "update_btn": "Update Asset",
+        "success_msg": "Minting Successful!",
+        "mined_value": "Mined Value",
+        "bonus_msg": "Halving Bonus",
+        "ledger_title": "Public Ledger",
+        "ledger_desc": "Active assets.",
+        "burn_title": "Asset Burn",
+        "burn_desc": "Burn your assets.",
+        "burn_btn": "Burn",
+        "burn_success": "Burn Complete.",
+        "admin_unlock": "Admin Unlock",
+        "master_key_ph": "Master Key",
+        "reg_dreamers": "Dreamers"
     },
     "EN": {
         "title": "Dream-Fi : Alchemy of the Unconscious",
@@ -213,7 +213,7 @@ LANG = {
     }
 }
 
-# --- CSS: [v27.3] UI 완전 삭제 (구조적 타격) ---
+# --- CSS: [v27.4] 3중 잠금장치 (투명화 + 공간삭제 + 위치이동) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
@@ -230,60 +230,49 @@ st.markdown("""
         overflow-wrap: break-word !important; 
     }
 
-    /* 3. [NUCLEAR OPTION v27.3] 구조적 타격으로 UI 완전 제거 */
+    /* 3. [STEALTH MODE v27.4] 좀비처럼 되살아나는 UI 요소 완전 박멸 */
+    /* 전략: 단순히 display:none만 쓰면 JS가 강제로 덮어씌울 수 있음.
+       따라서 투명도(opacity)를 0으로 만들고, 화면 밖으로 날려버리고(top: -9999px),
+       클릭도 못하게(pointer-events: none) 만드는 3중 잠금 적용. */
     
-    /* (A) 헤더 영역 통째로 삭제 (data-testid 사용) */
-    header[data-testid="stHeader"] {
+    /* (A) 헤더(상단바) & 툴바 & 상태 위젯 */
+    header, 
+    [data-testid="stHeader"], 
+    [data-testid="stToolbar"], 
+    [data-testid="stStatusWidget"],
+    .stApp > header {
         display: none !important;
+        opacity: 0 !important;
         visibility: hidden !important;
         height: 0px !important;
-        opacity: 0 !important;
         pointer-events: none !important;
+        position: fixed !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        z-index: -1 !important;
     }
 
-    /* (B) 툴바(햄버거 메뉴) 영역 삭제 */
-    div[data-testid="stToolbar"] {
+    /* (B) 푸터(하단바) & Hosted with Streamlit 배지 */
+    footer, 
+    [data-testid="stFooter"], 
+    [class*="viewerBadge"], 
+    .stDeployButton,
+    footer:after {
         display: none !important;
+        opacity: 0 !important;
         visibility: hidden !important;
+        height: 0px !important;
+        pointer-events: none !important;
+        position: fixed !important;
+        bottom: -9999px !important;
     }
-
-    /* (C) 상단 장식(Decoration) 삭제 */
+    
+    /* (C) 메인 메뉴 및 기타 장식 */
+    #MainMenu, 
     div[data-testid="stDecoration"] {
         display: none !important;
-        visibility: hidden !important;
     }
 
-    /* (D) 우측 상단 상태 위젯(동그라미) 삭제 */
-    div[data-testid="stStatusWidget"] {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-    /* (E) 푸터(Footer) 영역 통째로 삭제 (Hosted with Streamlit 빨간 버튼 포함) */
-    footer {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0px !important;
-        opacity: 0 !important;
-    }
-    
-    /* (F) 뷰어 배지(Viewer Badge) - 빨간 버튼의 본체 */
-    div[class*="viewerBadge"] {
-        display: none !important;
-        visibility: hidden !important;
-        width: 0px !important;
-    }
-    .stDeployButton {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-    /* (G) 메인 메뉴(MainMenu) ID 타격 */
-    #MainMenu {
-        display: none !important;
-        visibility: hidden !important;
-    }
-    
     /* 4. [타이틀 최적화] clamp 함수 사용 (자동 크기 조절) */
     .responsive-title {
         font-size: clamp(22px, 6vw, 50px) !important;
