@@ -8,7 +8,7 @@ import pytz
 
 # [SYSTEM CONFIG]
 st.set_page_config(
-    page_title="Dream-Fi Vault v27.1", 
+    page_title="Dream-Fi Vault v27.2", 
     page_icon="🏛️", 
     layout="wide", 
     initial_sidebar_state="collapsed"
@@ -213,7 +213,7 @@ LANG = {
     }
 }
 
-# --- CSS: 디자인 (모바일 타이틀 최적화 & 로고 완전 삭제) ---
+# --- CSS: [v27.2] UI 완전 제거 & 가독성 최적화 ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
@@ -230,17 +230,24 @@ st.markdown("""
         overflow-wrap: break-word !important; 
     }
 
-    /* 3. [초강력] Streamlit 로고/메뉴/푸터 강제 삭제 */
-    header { visibility: hidden !important; height: 0px !important; }
+    /* 3. [NUCLEAR OPTION] Streamlit 흔적 완전 소멸 작전 */
+    
+    /* (A) 상단 헤더 & 툴바 & 동그라미 제거 */
+    header[data-testid="stHeader"] { display: none !important; visibility: hidden !important; height: 0px !important; }
     div[data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
-    footer { display: none !important; visibility: hidden !important; }
-    div[class*="viewerBadge"] { display: none !important; }
+    div[data-testid="stStatusWidget"] { display: none !important; visibility: hidden !important; } /* 우측 상단 동그라미 */
+    
+    /* (B) 하단 푸터 & 빨간색 배지 제거 */
+    footer { display: none !important; visibility: hidden !important; height: 0px !important; }
+    div[data-testid="stFooter"] { display: none !important; visibility: hidden !important; }
+    div[class*="viewerBadge"] { display: none !important; visibility: hidden !important; } /* 빨간 버튼 */
+    
+    /* (C) 모바일 전용 햄버거 메뉴 및 장식 제거 */
     .stDeployButton { display: none !important; }
     #MainMenu { display: none !important; }
     
     /* 4. [타이틀 최적화] clamp 함수 사용 (자동 크기 조절) */
     .responsive-title {
-        /* 최소 22px ~ 화면의 6% ~ 최대 50px */
         font-size: clamp(22px, 6vw, 50px) !important;
         font-weight: 900 !important;
         color: #D4AF37 !important;
