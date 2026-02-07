@@ -7,7 +7,12 @@ import pandas as pd
 import pytz
 
 # [SYSTEM CONFIG]
-st.set_page_config(page_title="Dream-Fi Vault v27.0", page_icon="🏛️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="Dream-Fi Vault v27.1", 
+    page_icon="🏛️", 
+    layout="wide", 
+    initial_sidebar_state="collapsed"
+)
 
 # 🔒 1. 커뮤니티 공통 암호
 COMMUNITY_PASSWORD = "2026"
@@ -26,7 +31,7 @@ if 'language' not in st.session_state: st.session_state.language = "KO"
 KST = pytz.timezone('Asia/Seoul')
 
 # ==========================================
-# 📜 [WHITE PAPER] - 백서 내용 (Ver 1.1)
+# 📜 [WHITE PAPER] - 백서 내용
 # ==========================================
 WHITE_PAPER_TEXT = """
 ### 📜 Dream-Fi White Paper (Ver 1.1)
@@ -72,63 +77,21 @@ GUIDE_S1_FULL = """
 
 **1. 연상 (Associations): 개인적 의미의 방사형 연결**
 꿈의 이미지를 사전적 정의(보편적 상징)로 해석하지 마십시오. 존슨은 '방사형 연상(Starburst)'을 강조합니다. 꼬리에 꼬리를 무는 연상(A→B→C)이 아니라, 이미지(A)를 중심에 두고 떠오르는 직관(A→1, A→2, A→3)을 포착해야 합니다.
-
-**[적용법]**
-꿈에 나온 주요 명사, 인물, 기분을 적고 직관적인 느낌을 나열합니다.
-
-**[실례 적용]**
-* **초등학교 교실:** → 배움, 미성숙함, 규율, 답답함, 과거의 순수함.
-* **검은 옷의 남자:** → 권위적임, 무서움, 아버지 같은 느낌, 엄격한 선생님, 그림자(Shadow).
-* **오래된 시계:** → 시간의 압박, 할아버지, 정밀함, 멈춰 있음, 수명이 다함.
-* **당황함(감정):** → 무능력함, 준비되지 않음, 압도당함.
 """
 
 GUIDE_S2_FULL = """
 **2. 역학 (Dynamics): 내면의 인격들과 연결하기**
 꿈의 모든 등장인물과 사물은 '나 자신의 분열된 자아'입니다. 역학 단계는 연상된 이미지들이 내면에서 어떤 '부분'을 담당하고 있는지 식별하는 과정입니다.
-
-**[적용법]**
-연상된 키워드를 내 내면의 심리적 상황에 대입합니다. "내 안의 어떤 부분이 이 이미지와 닮았는가?"를 자문합니다.
-
-**[실례 적용]**
-* **초등학교 교실** → **나의 현재 학습 태도:** 나는 새로운 프로젝트 앞에서 미성숙한 태도를 보이고 있거나, 과거의 방식(낡은 교실)에 갇혀 있다.
-* **검은 옷의 남자** → **내면의 엄격한 감독관:** 이것은 나의 '초자아(Superego)'이거나 나를 압박하는 콤플렉스다. 그는 나에게 성과를 요구하고 있다.
-* **고장 난 시계** → **나의 생체 리듬 혹은 타이밍:** 내가 인생의 타이밍을 놓치고 있다는 강박, 혹은 나의 에너지가 고갈되어 멈췄음을 의미한다.
 """
 
 GUIDE_S3_FULL = """
 **3. 해석 (Interpretations): 메시지의 통합**
 연상과 역학을 종합하여 꿈이 보내는 '보상적(Compensatory) 메시지'를 읽어냅니다. 꿈은 의식이 한쪽으로 치우쳤을 때 균형을 맞추려 합니다.
-
-**[적용법]**
-두 가지 질문을 던집니다. "꿈은 나의 어떤 치우친 태도를 경고하는가?" 또는 "꿈은 내가 잊고 있는 어떤 잠재력을 일깨우는가?"
-
-**[실례 적용]**
-* **분석:** 나는 현재 현실에서 새로운 도전(프로젝트 등) 앞에 서 있지만, 자신감이 없고(당황함) 과거의 낡은 방식(초등학교)으로 문제를 해결하려 한다. 내면의 권위자(검은 남자)는 나에게 '시간 관리'나 '내면의 질서'(시계)를 회복하라고 명령하고 있다.
-* **결론:** 나는 지금 무언가를 급하게 추진할 것이 아니라, 멈춰버린 나의 내면 리듬(시계)을 먼저 수리해야 한다. 과거의 낡은 학습 방식에서 벗어나 전문가적인 태도를 갖춰야 한다는 신호다.
 """
 
 GUIDE_S4_FULL = """
 **4. 의례 (Rituals): 구체적 행동으로의 육화 (가장 중요)**
-빌더님, 이 단계가 로버트 존슨 꿈 작업의 핵심입니다. 깨달음(Insight)만으로는 부족합니다. 반드시 물리적인 행동(Action)이 따라야 무의식이 변화를 인지합니다. 거창할 필요는 없으나, 상징적 의미가 명확해야 합니다.
-
-**[적용법]**
-해석된 내용을 바탕으로 작지만 구체적인, 그리고 신성한(집중된) 행동을 수행합니다.
-
-**[실례 적용: 경제적/심리적 안정을 위한 실질적 지침]**
-* **나쁜 예:** "앞으로 시간을 잘 쓰자라고 다짐한다." (추상적임, 효과 없음)
-* **좋은 예 (의례):**
-    1.  실제로 집에 있는 멈춘 시계가 있다면 배터리를 교체하거나 수리점에 맡긴다. (물리적 행위)
-    2.  만약 시계가 없다면, 종이에 원을 그리고 하루의 시간을 어떻게 배분할지 구체적인 계획표를 짠 뒤, 그 종이를 정성스럽게 접어 지갑에 넣는다. (상징적 행위)
-    3.  서점에 가서 새로운 전문 서적을 한 권 사서 첫 챕터를 읽는다. (초등학교 교실, 즉 미성숙함에서 벗어나는 행위)
-
----
-**[Builder's Check: 사각지대 지적]**
-이 과정에서 빌더님이 가장 경계해야 할 것은 **'해석의 인플레이션(Inflation)'**입니다.
-
-* **지적 유희 금지:** 꿈 해석이 그저 "아, 내 무의식이 이렇구나, 신기하다"에서 끝나면 그것은 자아의 비대만 불러옵니다. 의례(Ritual)가 빠진 꿈 작업은 영혼의 에너지를 소모시킬 뿐, 현실을 바꾸지 못합니다.
-* **부정적 인물 수용:** 꿈속의 '검은 옷의 남자'를 적으로 간주하지 마십시오. 그는 억압된 지혜를 가진 조력자일 가능성이 높습니다. 두려운 대상에게 말을 걸거나 대접하는 상상을 하는 것(적극적 상상)이 필요할 수 있습니다.
-* **작은 의례의 힘:** 거창한 변화를 시도하다 실패하지 마시고, '10분 산책', '물 한 잔을 마시며 다짐하기'와 같이 통제 가능한 범위의 의례부터 시작하십시오.
+빌더님, 이 단계가 로버트 존슨 꿈 작업의 핵심입니다. 깨달음(Insight)만으로는 부족합니다. 반드시 물리적인 행동(Action)이 따라야 무의식이 변화를 인지합니다.
 """
 
 LANG = {
@@ -225,10 +188,10 @@ LANG = {
         "save_btn": "💾 Save Dream Content",
         "delete_btn": "Delete",
         "right_title": "🏛️ Dream-Fi Alchemy",
-        "guide_s1": "Please refer to the Korean guide for full context.",
-        "guide_s2": "Please refer to the Korean guide for full context.",
-        "guide_s3": "Please refer to the Korean guide for full context.",
-        "guide_s4": "Please refer to the Korean guide for full context.",
+        "guide_s1": "Context hidden.",
+        "guide_s2": "Context hidden.",
+        "guide_s3": "Context hidden.",
+        "guide_s4": "Context hidden.",
         "s1_label": "Stage 1: Association",
         "s2_label": "Stage 2: Dynamics",
         "s3_label": "Stage 3: Interpretation",
@@ -250,7 +213,7 @@ LANG = {
     }
 }
 
-# --- CSS: 디자인 (모바일 최적화 & 로고 숨김 적용) ---
+# --- CSS: 디자인 (모바일 타이틀 최적화 & 로고 완전 삭제) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
@@ -261,21 +224,36 @@ st.markdown("""
         color: #FFFFFF !important; 
     }
     
-    /* 2. [핵심] 한글 줄바꿈 최적화 (단어 단위 줄바꿈) */
+    /* 2. 한글 줄바꿈 최적화 */
     p, div, span, label, h1, h2, h3, h4, h5, h6, li, button {
         word-break: keep-all !important; 
         overflow-wrap: break-word !important; 
     }
-    
-    /* 3. [핵심] Streamlit 로고 및 푸터 완전히 숨기기 */
-    header { visibility: hidden !important; }
-    #MainMenu { visibility: hidden !important; }
-    footer { visibility: hidden !important; display: none !important; }
-    div[data-testid="stToolbar"] { display: none !important; }
-    .stDeployButton { display: none !important; }
-    div[class*="viewerBadge"] { display: none !important; }
 
-    /* 4. UI 컴포넌트 스타일링 */
+    /* 3. [초강력] Streamlit 로고/메뉴/푸터 강제 삭제 */
+    header { visibility: hidden !important; height: 0px !important; }
+    div[data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
+    footer { display: none !important; visibility: hidden !important; }
+    div[class*="viewerBadge"] { display: none !important; }
+    .stDeployButton { display: none !important; }
+    #MainMenu { display: none !important; }
+    
+    /* 4. [타이틀 최적화] clamp 함수 사용 (자동 크기 조절) */
+    .responsive-title {
+        /* 최소 22px ~ 화면의 6% ~ 최대 50px */
+        font-size: clamp(22px, 6vw, 50px) !important;
+        font-weight: 900 !important;
+        color: #D4AF37 !important;
+        text-align: center;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        font-family: 'Malgun Gothic', sans-serif;
+        line-height: 1.3 !important;
+        width: 100%;
+        display: block;
+    }
+
+    /* 5. UI 컴포넌트 스타일링 */
     [data-testid="stSidebar"] { background-color: #111111 !important; border-right: 1px solid #333 !important; }
     
     .streamlit-expanderHeader { background-color: #1A1A1A !important; border-radius: 5px !important; border: 1px solid #333 !important; }
@@ -292,7 +270,6 @@ st.markdown("""
     div[data-testid="column"] { background-color: #111111; border: 1px solid #333333; border-radius: 8px; padding: 20px; }
     
     .dreamer-count-header { font-family: 'Cinzel', serif; color: #D4AF37; font-size: 1.2em; font-weight: bold; text-align: right; }
-    .main-title { font-size: 2.5em; font-weight: 900; color: #D4AF37 !important; text-align: center; margin-bottom: 20px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); font-family: 'Malgun Gothic', sans-serif; }
     .quote-box { background-color: #1A1A1A !important; border-left: 4px solid #D4AF37 !important; padding: 20px !important; margin: 20px 0 !important; color: #E0E0E0 !important; font-style: italic; font-size: 1.2em; border-radius: 5px; }
     .defi-desc-box { background-color: #111111 !important; padding: 30px !important; border-radius: 15px !important; border: 1px solid #333 !important; margin-top: 30px; margin-bottom: 30px; }
     .defi-desc-text { color: #BBBBBB !important; font-size: 1.0em; line-height: 1.8; font-family: sans-serif; }
@@ -362,7 +339,8 @@ if not st.session_state.access_granted:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown(f"<div class='main-title'>{T['title']}</div>", unsafe_allow_html=True)
+        # 🟢 [타이틀 변경] HTML 클래스 적용 (responsive-title)
+        st.markdown(f"<div class='responsive-title'>{T['title']}</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='quote-box'>{T['manifesto_quote']}</div>", unsafe_allow_html=True)
         
         st.markdown(f"""<div class='defi-desc-box'>
