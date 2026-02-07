@@ -8,7 +8,7 @@ import pytz
 
 # [SYSTEM CONFIG]
 st.set_page_config(
-    page_title="Dream-Fi Vault v27.2", 
+    page_title="Dream-Fi Vault v27.3", 
     page_icon="🏛️", 
     layout="wide", 
     initial_sidebar_state="collapsed"
@@ -213,7 +213,7 @@ LANG = {
     }
 }
 
-# --- CSS: [v27.2] UI 완전 제거 & 가독성 최적화 ---
+# --- CSS: [v27.3] UI 완전 삭제 (구조적 타격) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
@@ -230,21 +230,59 @@ st.markdown("""
         overflow-wrap: break-word !important; 
     }
 
-    /* 3. [NUCLEAR OPTION] Streamlit 흔적 완전 소멸 작전 */
+    /* 3. [NUCLEAR OPTION v27.3] 구조적 타격으로 UI 완전 제거 */
     
-    /* (A) 상단 헤더 & 툴바 & 동그라미 제거 */
-    header[data-testid="stHeader"] { display: none !important; visibility: hidden !important; height: 0px !important; }
-    div[data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
-    div[data-testid="stStatusWidget"] { display: none !important; visibility: hidden !important; } /* 우측 상단 동그라미 */
+    /* (A) 헤더 영역 통째로 삭제 (data-testid 사용) */
+    header[data-testid="stHeader"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* (B) 툴바(햄버거 메뉴) 영역 삭제 */
+    div[data-testid="stToolbar"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* (C) 상단 장식(Decoration) 삭제 */
+    div[data-testid="stDecoration"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* (D) 우측 상단 상태 위젯(동그라미) 삭제 */
+    div[data-testid="stStatusWidget"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* (E) 푸터(Footer) 영역 통째로 삭제 (Hosted with Streamlit 빨간 버튼 포함) */
+    footer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        opacity: 0 !important;
+    }
     
-    /* (B) 하단 푸터 & 빨간색 배지 제거 */
-    footer { display: none !important; visibility: hidden !important; height: 0px !important; }
-    div[data-testid="stFooter"] { display: none !important; visibility: hidden !important; }
-    div[class*="viewerBadge"] { display: none !important; visibility: hidden !important; } /* 빨간 버튼 */
-    
-    /* (C) 모바일 전용 햄버거 메뉴 및 장식 제거 */
-    .stDeployButton { display: none !important; }
-    #MainMenu { display: none !important; }
+    /* (F) 뷰어 배지(Viewer Badge) - 빨간 버튼의 본체 */
+    div[class*="viewerBadge"] {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0px !important;
+    }
+    .stDeployButton {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* (G) 메인 메뉴(MainMenu) ID 타격 */
+    #MainMenu {
+        display: none !important;
+        visibility: hidden !important;
+    }
     
     /* 4. [타이틀 최적화] clamp 함수 사용 (자동 크기 조절) */
     .responsive-title {
