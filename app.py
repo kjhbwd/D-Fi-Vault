@@ -8,7 +8,7 @@ import pytz
 
 # [SYSTEM CONFIG]
 st.set_page_config(
-    page_title="Dream-Fi Vault v29.5", 
+    page_title="Dream-Fi Vault v30.0", 
     page_icon="🏛️", 
     layout="wide", 
     initial_sidebar_state="collapsed"
@@ -189,7 +189,7 @@ LANG = {
     }
 }
 
-# --- CSS: [v29.5] 모바일 아이콘 박멸 + 가독성 ---
+# --- CSS: [v30.0] 모바일 아이콘 멸망 CSS + 가독성 ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap');
@@ -239,21 +239,35 @@ st.markdown("""
         caret-color: #FFFFFF !important; 
     }
     
-    /* 5. [STEALTH MODE] UI 삭제 및 모바일 아이콘 박멸 (완벽 적용) */
-    header, [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stStatusWidget"] {
-        display: none !important; opacity: 0 !important; height: 0px !important; pointer-events: none !important;
-    }
-    footer, [data-testid="stFooter"], .stDeployButton {
-        display: none !important; opacity: 0 !important; height: 0px !important; pointer-events: none !important;
-    }
-    #MainMenu, div[data-testid="stDecoration"] { display: none !important; }
-    
-    /* 모바일 우측 하단 관리자 아이콘/배지 완전 숨김 */
-    [class^="viewerBadge_"], [class*="viewerBadge_"], .viewerBadge_container__1QSob, 
-    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137, .viewerBadge_text__1JaDK {
+    /* 5. 🚀 [STEALTH MODE: NUKE CSS] 스트림릿 배지 완벽 박멸 🚀 */
+    /* 기본 헤더, 푸터, 툴바, 데코레이션 제거 */
+    header, footer, 
+    [data-testid="stHeader"], [data-testid="stToolbar"], 
+    [data-testid="stStatusWidget"], [data-testid="stDecoration"], 
+    [data-testid="manage-app-button"], [data-testid="stAppDeployButton"],
+    .stDeployButton, #MainMenu {
         display: none !important; 
         visibility: hidden !important; 
         opacity: 0 !important; 
+        pointer-events: none !important;
+        z-index: -9999 !important;
+        height: 0 !important;
+        width: 0 !important;
+    }
+    
+    /* 모바일 우측 하단 떠돌이 버튼류 강제 폭파 (wildcard) */
+    [class^="viewerBadge_"], [class*="viewerBadge_"], 
+    .viewerBadge_container__1QSob, .styles_viewerBadge__1yB5_, 
+    .viewerBadge_link__1S137, .viewerBadge_text__1JaDK,
+    div[class*="st-emotion-cache-1"] > button[title="Manage app"],
+    div[class*="st-emotion-cache-1"] > button[kind="header"] {
+        display: none !important; 
+        visibility: hidden !important; 
+        opacity: 0 !important; 
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
         z-index: -9999 !important;
     }
     
@@ -279,6 +293,22 @@ st.markdown("""
     }
     button:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5) !important; }
     button p, button div, button span { color: #000000 !important; font-weight: 900 !important; font-size: 1rem !important; }
+
+    /* 로드 버튼 리스트용 정렬 버튼 (텍스트 왼쪽 정렬) */
+    .load-btn-wide button {
+        text-align: left !important;
+        padding-left: 15px !important;
+        font-weight: normal !important;
+        background: #1A1A1A !important;
+        color: #D4AF37 !important;
+        border: 1px solid #333 !important;
+        box-shadow: none !important;
+        width: 100% !important;
+    }
+    .load-btn-wide button:hover {
+        background: #222 !important;
+        border: 1px solid #D4AF37 !important;
+    }
 
     /* 8. [GALAXY THEME] */
     .galaxy-box {
@@ -340,7 +370,7 @@ def get_user_count():
         return count_res.count if count_res.count else 0
     except: return 0
 
-# 🛠️ [버그 수정 1] 일일 채굴량 계산기 (새로운 형식 인식)
+# 🛠️ 일일 채굴량 계산기
 def get_today_mined_count(user_id):
     try:
         now_kst = datetime.datetime.now(KST)
@@ -354,14 +384,13 @@ def get_today_mined_count(user_id):
                 if meaning and "Value:" in meaning:
                     try:
                         score_text = meaning.split("Value: ")[1]
-                        # "Dream Pts"와 "Pts" 모두 제거하고 숫자만 추출
                         clean_score = score_text.replace("Dream Pts", "").replace("Pts", "").replace(",", "").strip()
                         today_total += int(clean_score)
                     except: pass
         return today_total
     except: return 0
 
-# 🛠️ [버그 수정 2] 장부 데이터 계산기
+# 🛠️ 장부 데이터 계산기
 def get_ledger_data():
     try:
         res_all = supabase.table("dreams").select("*").execute()
@@ -392,7 +421,7 @@ def get_ledger_data():
         return df
     except: return pd.DataFrame()
 
-# 🛠️ [버그 수정 3] 총 자산 상태 계산기
+# 🛠️ 총 자산 상태 계산기
 def get_global_status(current_user):
     try:
         res_all = supabase.table("dreams").select("*").execute()
@@ -619,25 +648,48 @@ col_left, col_right = st.columns(2)
 with col_left:
     st.markdown(f"### {T['left_title']}")
     with st.expander(T['load_dreams'], expanded=False):
+        
+        # 📅 [기능 추가] 날짜 검색 vs 최근 10개 선택 옵션
+        search_mode = st.radio("검색 방식", ["최근 10개 보기", "특정 날짜 검색"], horizontal=True, label_visibility="collapsed")
+        
         try:
-            res = supabase.table("dreams").select("*").eq("user_id", st.session_state.user_id).order("created_at", desc=True).limit(10).execute()
+            if search_mode == "특정 날짜 검색":
+                target_date = st.date_input("불러올 꿈의 날짜를 선택하세요", value=datetime.date.today())
+                
+                # UTC 시간 변환 (수파베이스 쿼리용)
+                start_dt = KST.localize(datetime.datetime.combine(target_date, datetime.time.min)).astimezone(pytz.UTC).isoformat()
+                end_dt = KST.localize(datetime.datetime.combine(target_date, datetime.time.max)).astimezone(pytz.UTC).isoformat()
+                
+                res = supabase.table("dreams").select("*").eq("user_id", st.session_state.user_id).gte("created_at", start_dt).lte("created_at", end_dt).order("created_at", desc=True).execute()
+            else:
+                res = supabase.table("dreams").select("*").eq("user_id", st.session_state.user_id).order("created_at", desc=True).limit(10).execute()
+            
             if res.data:
+                st.markdown("<div class='load-btn-wide'>", unsafe_allow_html=True)
                 for d in res.data:
-                    c_l, c_r = st.columns([0.3, 0.7])
-                    with c_l:
-                        if st.button(T['load_btn'], key=f"L_{d['id']}"):
-                            st.session_state.current_dream_id = d['id']
-                            st.session_state.dream_context = d.get('context', "")
-                            st.session_state.s1_val = d.get('symbol', "")
-                            st.session_state.s2_val = d.get('block', "")
-                            st.session_state.s3_val = d.get('analysis', "") 
-                            st.session_state.s4_val = d.get('ritual_self', "")
-                            meaning_text = d.get('meaning', "")
-                            st.session_state.existing_value = meaning_text if meaning_text else "N/A"
-                            st.session_state.is_minted = True if meaning_text else False
-                            st.rerun()
-                    with c_r: st.write(f"{d['created_at'][:10]} | {d.get('context', '')[:10]}...")
-            else: st.info("기록이 없습니다.")
+                    # KST 시간으로 표시 변환
+                    korean_time = datetime.datetime.fromisoformat(d['created_at'].replace("Z", "+00:00")).astimezone(KST)
+                    display_date = korean_time.strftime("%Y-%m-%d")
+                    
+                    dream_text = d.get('context', '').replace('\n', ' ')
+                    btn_label = f"📂 {display_date} | {dream_text[:20]}..."
+                    if st.button(btn_label, key=f"L_{d['id']}", use_container_width=True):
+                        st.session_state.current_dream_id = d['id']
+                        st.session_state.dream_context = d.get('context', "")
+                        st.session_state.s1_val = d.get('symbol', "")
+                        st.session_state.s2_val = d.get('block', "")
+                        st.session_state.s3_val = d.get('analysis', "") 
+                        st.session_state.s4_val = d.get('ritual_self', "")
+                        meaning_text = d.get('meaning', "")
+                        st.session_state.existing_value = meaning_text if meaning_text else "N/A"
+                        st.session_state.is_minted = True if meaning_text else False
+                        st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+            else: 
+                if search_mode == "특정 날짜 검색":
+                    st.info(f"{target_date} 에 기록된 꿈이 없습니다.")
+                else:
+                    st.info("기록이 없습니다.")
         except: pass
     
     if st.button(T['reset_btn']):
