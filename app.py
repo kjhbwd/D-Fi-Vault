@@ -8,7 +8,7 @@ import pytz
 
 # [SYSTEM CONFIG]
 st.set_page_config(
-    page_title="Dream-Fi Vault v30.0", 
+    page_title="Dream-Pi Vault v30.1", 
     page_icon="🏛️", 
     layout="wide", 
     initial_sidebar_state="collapsed"
@@ -34,14 +34,14 @@ KST = pytz.timezone('Asia/Seoul')
 # 📜 [WHITE PAPER] - 백서 내용
 # ==========================================
 WHITE_PAPER_TEXT = """
-### 📜 Dream-Fi White Paper (Ver 1.1)
+### 📜 Dream-Pi White Paper (Ver 1.1)
 #### : The Alchemy of the Unconscious (무의식의 연금술)
 
 ---
 
 #### 1. 서문 (Problem Statement)
 "현실의 결핍은 무의식의 풍요로 채워져야 한다."
-현대인은 생존 경쟁에 매몰되어 자신의 잠재력을 잊고 살아갑니다. Dream-Fi는 매일 밤 버려지는 무의식(꿈)을 채굴하고 자산화하여, 평범한 개인이 자신의 운명을 바꾸는 퀀텀 점프(Quantum Jump)를 지원합니다.
+현대인은 생존 경쟁에 매몰되어 자신의 잠재력을 잊고 살아갑니다. Dream-Pi는 매일 밤 버려지는 무의식(꿈)을 채굴하고 자산화하여, 평범한 개인이 자신의 운명을 바꾸는 퀀텀 점프(Quantum Jump)를 지원합니다.
 
 #### 2. 솔루션 & 기술 (Methodology)
 우리는 로버트 존슨의 4단계 프로토콜(4-Step Protocol)을 통해 무형의 꿈을 유형의 자산(Block)으로 변환합니다.
@@ -57,7 +57,7 @@ WHITE_PAPER_TEXT = """
 * **일일 한도:** 10,000 Pts (무분별한 인플레이션 방지)
 
 #### 4. 로드맵 및 비전 (Roadmap & Ecosystem)
-Dream-Fi의 궁극적인 목표는 단순한 기록 저장소가 아닌, 실질적인 부(Wealth)의 창출과 순환입니다.
+Dream-Pi의 궁극적인 목표는 단순한 기록 저장소가 아닌, 실질적인 부(Wealth)의 창출과 순환입니다.
 
 * **비즈니스 인큐베이팅 (From Dream to Business):**
 SNS 광고 수익은 기초적인 단계일 뿐입니다. 우리는 꿈에서 얻은 창의적인 영감과 아이디어를 실제 사업 모델과 비즈니스로 연결합니다. 무의식의 통찰이 구체적인 제품과 서비스가 되어, 유저가 진정한 경제적 자유를 얻도록 돕습니다.
@@ -123,21 +123,17 @@ GUIDE_S4_FULL = """
 # ==========================================
 LANG = {
     "KO": {
-        "title": "Dream-Fi : 무의식의 연금술",
-        "manifesto_quote": '"현실의 결핍은 무의식의 풍요로 채워진다.<br>이것은 평범한 개인이 자신의 운명을 바꾸는 <b>퀀텀 점프 실험실</b>입니다."',
-        "tokenomics": "🪙 Tokenomics : 비트코인 모델 적용",
-        "token_desc": "• 총 발행 한도: 21,000,000 Dream Pts<br>• 반감기(Halving): 매 2,100,000 Pts 채굴 시 보상 50% 감소",
-        "desc_1_title": "1. 성장의 시각화 (Visualizing Growth)",
-        "desc_1_text": "저는 생존을 고민하는 평범한 사람입니다. 하지만 매일 밤 <b>꿈(무의식)</b>을 채굴하여 제 잠재력을 깨우고 있습니다. 여기에 쌓이는 <b>Dream Pts</b>는 제가 얼마나 깊이 각성했는지를 보여주는 <b>성장의 증명</b>입니다.",
-        "desc_2_title": "2. 현실의 변화 (X-Factor)",
-        "desc_2_text": """이곳에서 제련된 통찰은 <b>SNS</b>와 현실의 콘텐츠가 됩니다. 무의식의 영감이 어떻게 <b>노출수(Traffic)</b>와 <b>수익(Revenue)</b>으로 변환되는지 목격하십시오.
-        <br><br>
-        <span style="color:#bbb; font-style:italic;">
-        "어쩌면, 무의식의 연금술로 삶이 바뀐 선구자들이 자발적으로 이 생태계에 씨앗(Fund)을 뿌릴지도 모릅니다.
-        그 후원금이 모인다면, 당신의 Dream Pts는 언젠가 현실의 재화로 '바이백(Buy-back)' 되어 돌아올 수도 있겠죠.
-        마치 꿈이 현실이 되는 그날처럼 말입니다."
-        </span>
-        """,
+        "title": "Dream-Pi : 무의식의 연금술",
+        "manifesto_quote": '"현실의 결핍은 무의식의 풍요로 채워집니다.<br>이곳은 평범한 개인이 내면의 그림자를 대면하며 자신의 운명을 바꾸는 <b>성장의 요람</b>입니다."',
+        "desc_1_title": "1. 꿈을 통한 자기 응시 (Self-Reflecting)",
+        "desc_1_text": "우리는 밖을 보는 자가 아니라, 안을 들여다보는 자가 되기를 선택합니다. 분석심리학의 거장 <b>칼 융(Carl Jung)</b>과 로버트 A. 존슨이 제시한 <b>'4단계 꿈 작업(연상-역동-해석-의례)'</b>을 통해, 일상의 소음 뒤에 숨겨진 '그림자(Shadow)'를 발견합니다. 이것은 단순한 기록을 넘어, 내면의 미답지(未踏地)를 개척하는 고도의 자기계발 도구입니다.",
+        "desc_2_title": "2. 성장의 시각화 : Dream Pts (Dream Points)",
+        "desc_2_text": "매일 밤 무의식에서 길어 올린 통찰은 당신의 잠재력을 깨우는 연료가 됩니다. 이곳에서 쌓이는 Dream Pts는 당신이 얼마나 깊이 자신과 마주하고 각성했는지를 보여주는 <b>'성장의 증명'</b>입니다. 보이지 않는 내면의 변화를 가시적인 지표로 확인하며 한계를 돌파하는 퀀텀 점프를 경험하십시오.",
+        "desc_3_title": "3. 가치의 선순환 : 자발적 후원과 바이백(Buy-back)",
+        "desc_3_text": """나의 무의식이 정제되어 현실의 콘텐츠(인사이트)가 될 때, 그것은 타인에게 강력한 영감이 됩니다. 이 여정에 공감하고 삶의 변화를 경험한 선구자들이 자발적으로 씨앗(Fund)을 뿌리는 생태계를 지향합니다.<br><br>
+조성된 후원금은 여러분이 쌓아온 Dream Pts의 가치를 인정하여 현실의 재화로 되돌려 드리는 '바이백(Buy-back)' 시스템의 근간이 됩니다. 마치 간절했던 꿈이 어느덧 눈앞의 현실이 되는 그날처럼 말입니다.<br><br>
+<span style="color:#D4AF37; font-style:italic; font-weight:bold;">"오늘 당신의 무의식은 어떤 보물을 품고 있습니까? 그림자 속의 빛을 찾아내는 이 경이로운 실험에 당신을 초대합니다."</span>""",
+        
         "login_placeholder": "입장 코드를 입력하세요 (2026)",
         "login_btn": "🗝️ 무의식 광산 입장하기",
         "login_error": "⛔ 코드가 틀렸습니다. (2026)",
@@ -163,7 +159,7 @@ LANG = {
         "status_new": "✨ 신규 작성 모드",
         "save_btn": "💾 꿈 내용 저장 (Save Dream)",
         "delete_btn": "🗑️ 삭제 (Delete)",
-        "right_title": "🏛️ Dream-Fi 연금술 (4-Step)",
+        "right_title": "🏛️ Dream-Pi 연금술 (4-Step)",
         "guide_s1": GUIDE_S1_FULL,
         "guide_s2": GUIDE_S2_FULL,
         "guide_s3": GUIDE_S3_FULL,
@@ -172,7 +168,7 @@ LANG = {
         "s2_label": "2단계: 역학 (Dynamics)",
         "s3_label": "3단계: 해석 (Interpretation)",
         "s4_label": "4단계: 의례 (Ritual)",
-        "mint_btn": "⛏️ Dream-Fi 채굴 (Mint)",
+        "mint_btn": "⛏️ Dream-Pi 채굴 (Mint)",
         "update_btn": "💾 꿈 수정 보완", 
         "success_msg": "Mining Successful!",
         "mined_value": "Mined Value",
@@ -189,7 +185,7 @@ LANG = {
     }
 }
 
-# --- CSS: [v30.0] 모바일 아이콘 멸망 CSS + 가독성 ---
+# --- CSS: [v30.1] 모바일 아이콘 멸망 CSS + 가독성 ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap');
@@ -240,7 +236,6 @@ st.markdown("""
     }
     
     /* 5. 🚀 [STEALTH MODE: NUKE CSS] 스트림릿 배지 완벽 박멸 🚀 */
-    /* 기본 헤더, 푸터, 툴바, 데코레이션 제거 */
     header, footer, 
     [data-testid="stHeader"], [data-testid="stToolbar"], 
     [data-testid="stStatusWidget"], [data-testid="stDecoration"], 
@@ -255,7 +250,6 @@ st.markdown("""
         width: 0 !important;
     }
     
-    /* 모바일 우측 하단 떠돌이 버튼류 강제 폭파 (wildcard) */
     [class^="viewerBadge_"], [class*="viewerBadge_"], 
     .viewerBadge_container__1QSob, .styles_viewerBadge__1yB5_, 
     .viewerBadge_link__1S137, .viewerBadge_text__1JaDK,
@@ -294,7 +288,7 @@ st.markdown("""
     button:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5) !important; }
     button p, button div, button span { color: #000000 !important; font-weight: 900 !important; font-size: 1rem !important; }
 
-    /* 로드 버튼 리스트용 정렬 버튼 (텍스트 왼쪽 정렬) */
+    /* 로드 버튼 리스트용 정렬 버튼 */
     .load-btn-wide button {
         text-align: left !important;
         padding-left: 15px !important;
@@ -370,7 +364,6 @@ def get_user_count():
         return count_res.count if count_res.count else 0
     except: return 0
 
-# 🛠️ 일일 채굴량 계산기
 def get_today_mined_count(user_id):
     try:
         now_kst = datetime.datetime.now(KST)
@@ -390,7 +383,6 @@ def get_today_mined_count(user_id):
         return today_total
     except: return 0
 
-# 🛠️ 장부 데이터 계산기
 def get_ledger_data():
     try:
         res_all = supabase.table("dreams").select("*").execute()
@@ -421,7 +413,6 @@ def get_ledger_data():
         return df
     except: return pd.DataFrame()
 
-# 🛠️ 총 자산 상태 계산기
 def get_global_status(current_user):
     try:
         res_all = supabase.table("dreams").select("*").execute()
@@ -450,7 +441,6 @@ def get_global_status(current_user):
         return my_total, my_count, global_mined, current_multiplier, halving_era
     except: return 0, 0, 0, 1, 0
 
-# 🧠 [ALGORITHM] 질적 평가 채점 로직
 def calculate_mining_score(context, s1, s2, s3, s4, multiplier, is_early):
     base_score = len(context) * 2
     quality_bonus = 0
@@ -489,16 +479,16 @@ if not st.session_state.access_granted:
         
         st.markdown(f"""<div class='defi-desc-box'>
     <div class='defi-desc-text'>
-        <span class='highlight-gold'>{T['tokenomics']}</span>
-        <p>{T['token_desc']}</p>
         <p><span class='highlight-bold'>{T['desc_1_title']}</span><br>
         {T['desc_1_text']}</p>
         <p><span class='highlight-bold'>{T['desc_2_title']}</span><br>
         {T['desc_2_text']}</p>
+        <p><span class='highlight-bold'>{T['desc_3_title']}</span><br>
+        {T['desc_3_text']}</p>
     </div>
 </div>""", unsafe_allow_html=True)
         
-        with st.expander("📜 Dream-Fi White Paper (백서 읽기)"):
+        with st.expander("📜 Dream-Pi White Paper (백서 읽기)"):
             st.markdown(WHITE_PAPER_TEXT)
         
         with st.form("gate_form"):
@@ -649,14 +639,12 @@ with col_left:
     st.markdown(f"### {T['left_title']}")
     with st.expander(T['load_dreams'], expanded=False):
         
-        # 📅 [기능 추가] 날짜 검색 vs 최근 10개 선택 옵션
         search_mode = st.radio("검색 방식", ["최근 10개 보기", "특정 날짜 검색"], horizontal=True, label_visibility="collapsed")
         
         try:
             if search_mode == "특정 날짜 검색":
                 target_date = st.date_input("불러올 꿈의 날짜를 선택하세요", value=datetime.date.today())
                 
-                # UTC 시간 변환 (수파베이스 쿼리용)
                 start_dt = KST.localize(datetime.datetime.combine(target_date, datetime.time.min)).astimezone(pytz.UTC).isoformat()
                 end_dt = KST.localize(datetime.datetime.combine(target_date, datetime.time.max)).astimezone(pytz.UTC).isoformat()
                 
@@ -667,7 +655,6 @@ with col_left:
             if res.data:
                 st.markdown("<div class='load-btn-wide'>", unsafe_allow_html=True)
                 for d in res.data:
-                    # KST 시간으로 표시 변환
                     korean_time = datetime.datetime.fromisoformat(d['created_at'].replace("Z", "+00:00")).astimezone(KST)
                     display_date = korean_time.strftime("%Y-%m-%d")
                     
