@@ -5,6 +5,7 @@ import datetime
 import random
 import pandas as pd
 import pytz
+import hashlib # 🔑 [NEW] 해시값 생성을 위한 라이브러리 추가
 
 # [SYSTEM CONFIG]
 st.set_page_config(
@@ -124,7 +125,7 @@ GUIDE_S4_FULL = """
 LANG = {
     "KO": {
         "title": "Dream-Pi : 무의식의 연금술",
-        "manifesto_quote": '"현실의 결핍은 무의식의 풍요로 채워집니다.<br>이곳은 평범한 개인이 내면의 그림자를 대면하며 자신의 운명을 바꾸는 <b>퀀텀성장 실험실</b>입니다."<br><br>',
+        "manifesto_quote": '"현실의 결핍은 무의식의 풍요로 채워집니다.<br>이곳은 평범한 개인이 내면의 그림자를 대면하며 자신의 운명을 바꾸는 <b>성장의 요람</b>입니다."<br><br>',
         "desc_1_title": "1. 꿈을 통한 자기 응시 (Self-Reflecting)",
         "desc_1_text": "우리는 밖을 보는 자가 아니라, 안을 들여다보는 자가 되기를 선택합니다. 분석심리학의 거장 <b>칼 융(Carl Jung)</b>과 로버트 A. 존슨이 제시한 <b>'4단계 꿈 작업(연상-역동-해석-의례)'</b>을 통해, 일상의 소음 뒤에 숨겨진 '그림자(Shadow)'를 발견합니다. 이것은 단순한 기록을 넘어, 내면의 미답지(未踏地)를 개척하는 고도의 자기계발 도구입니다.",
         "desc_2_title": "2. 성장의 시각화 : Dream Pts (Dream Points)",
@@ -321,7 +322,15 @@ st.markdown("""
     .galaxy-score {
         font-size: 3.5em !important; font-weight: 900 !important;
         background: -webkit-linear-gradient(#fff, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        margin: 20px 0 !important;
+        margin: 20px 0 10px 0 !important;
+    }
+    .galaxy-hash {
+        color: #00FF41 !important;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        margin-bottom: 20px;
+        word-break: break-all;
+        text-shadow: 0 0 5px rgba(0,255,65,0.5);
     }
     
     /* 9. [FIXED SCORE BOX] */
@@ -335,6 +344,7 @@ st.markdown("""
     }
     .fixed-score-title { color: #888; font-size: 0.9em; margin-bottom: 5px; }
     .fixed-score-val { color: #D4AF37; font-size: 1.5em; font-weight: bold; }
+    .fixed-score-hash { color: #00FF41; font-family: 'Courier New', monospace; font-size: 0.8em; margin-top: 5px; word-break: break-all; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -345,7 +355,8 @@ if 'auth_step' not in st.session_state: st.session_state.auth_step = "check_id"
 if 'temp_username' not in st.session_state: st.session_state.temp_username = ""
 if 'is_admin_unlocked' not in st.session_state: st.session_state.is_admin_unlocked = False
 
-for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
+# 🔑 [NEW] 기존 해시값을 불러오기 위해 Session State 에 existing_hash 추가
+for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value', 'existing_hash']:
     if key not in st.session_state: st.session_state[key] = "" if key != 'current_dream_id' else None
 if 'is_minted' not in st.session_state: st.session_state.is_minted = False
 
@@ -668,6 +679,9 @@ with col_left:
                         st.session_state.s3_val = d.get('analysis', "") 
                         st.session_state.s4_val = d.get('ritual_self', "")
                         meaning_text = d.get('meaning', "")
+                        
+                        # 🔑 [NEW] 기존 해시값이 있다면 함께 불러오기
+                        st.session_state.existing_hash = d.get('hash_id', "")
                         st.session_state.existing_value = meaning_text if meaning_text else "N/A"
                         st.session_state.is_minted = True if meaning_text else False
                         st.rerun()
@@ -680,7 +694,7 @@ with col_left:
         except: pass
     
     if st.button(T['reset_btn']):
-        for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value']:
+        for key in ['current_dream_id', 'dream_context', 's1_val', 's2_val', 's3_val', 's4_val', 'existing_value', 'existing_hash']:
             st.session_state[key] = "" if key != 'current_dream_id' else None
         st.session_state.is_minted = False
         st.rerun()
@@ -739,11 +753,14 @@ with col_right:
         
         st.text_area("4. 의례 (구체적 행동 다짐)", key="s4_val", height=100, label_visibility="collapsed")
         
+        # 🔑 [NEW] 이미 채굴된 꿈을 불러왔을 때 고정된 해시값도 같이 보여주기
         if st.session_state.is_minted and st.session_state.existing_value:
+             hash_html = f"<div class='fixed-score-hash'>Hash: {st.session_state.existing_hash}</div>" if st.session_state.existing_hash else ""
              st.markdown(f"""
              <div class="fixed-score-box">
                 <div class="fixed-score-title">🏆 최초 획득 가치 (고정됨)</div>
                 <div class="fixed-score-val">{st.session_state.existing_value}</div>
+                {hash_html}
              </div>
              """, unsafe_allow_html=True)
         
@@ -770,7 +787,7 @@ with col_right:
                             "analysis": st.session_state.s3_val,
                             "ritual_self": st.session_state.s4_val
                         }).eq("id", st.session_state.current_dream_id).eq("user_id", st.session_state.user_id).execute()
-                        st.toast("✅ 수정 보완 완료! (점수는 변하지 않습니다)")
+                        st.toast("✅ 수정 보완 완료! (점수와 해시값은 변하지 않습니다)")
                     else:
                         if daily_remaining <= 0:
                             st.error("🛑 오늘의 채굴 한도를 초과했습니다.")
@@ -791,26 +808,37 @@ with col_right:
                                 final_score = min(final_score, daily_remaining)
                                 new_val_str = f"{final_score:,} Pts"
                                 
+                                # 🔑 [NEW] 영혼의 영수증(해시값) 생성 연금술
+                                current_iso_time = datetime.datetime.now(KST).isoformat()
+                                raw_string = f"{st.session_state.user_id}_{current_iso_time}_{st.session_state.s1_val}_{st.session_state.s2_val}_{st.session_state.s3_val}_{st.session_state.s4_val}"
+                                dream_hash = hashlib.sha256(raw_string.encode('utf-8')).hexdigest()
+                                hash_display = f"0x{dream_hash}"
+                                
+                                # 🔑 [NEW] 수파베이스 DB 업데이트 (hash_id 컬럼에 생성된 해시 저장)
                                 supabase.table("dreams").update({
                                     "symbol": st.session_state.s1_val, 
                                     "block": st.session_state.s2_val, 
                                     "analysis": st.session_state.s3_val,
                                     "ritual_self": st.session_state.s4_val, 
-                                    "meaning": f"Value: {new_val_str}"
+                                    "meaning": f"Value: {new_val_str}",
+                                    "hash_id": hash_display 
                                 }).eq("id", st.session_state.current_dream_id).eq("user_id", st.session_state.user_id).execute()
                                 
                                 st.session_state.is_minted = True
                                 st.session_state.existing_value = new_val_str
+                                st.session_state.existing_hash = hash_display
                                 
                                 st.balloons()
                                 
+                                # 🔑 [NEW] 우주적 UI 표출 화면에 해시값 추가 노출
                                 msg = st.empty()
                                 msg.markdown(f"""
                                 <div class="galaxy-box">
                                     <div class="galaxy-title">DREAM MINED!</div>
                                     <div class="galaxy-score">+{final_score:,} Pts</div>
+                                    <div class="galaxy-hash">[Dream-Block Hash]<br>{hash_display}</div>
                                     <div class="galaxy-desc">The Alchemy of the Unconscious Complete</div>
                                 </div>
                                 """, unsafe_allow_html=True)
-                                time.sleep(4) 
+                                time.sleep(5) 
                                 st.rerun()
